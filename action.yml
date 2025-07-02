@@ -1,0 +1,24 @@
+name: "Conventional Commits Suggester"
+description: "Checks if commit messages follow Conventional Commits and suggests corrections if not."
+author: "Your Name"
+inputs:
+  github_token:
+    description: "GitHub token for API access"
+    required: true
+  fail_on_error:
+    description: "Fail workflow on error (true/false, default: true)"
+    required: false
+    default: "true"
+  allowed_types:
+    description: "Comma-separated list of allowed types (default: feat,fix,chore,docs,refactor,test,ci,build,perf)"
+    required: false
+  suggestion_mode:
+    description: "How suggestions are delivered: comment, summary, or both (default: summary)"
+    required: false
+    default: "summary"
+runs:
+  using: "node20"
+  main: "dist/index.js"
+branding:
+  icon: "check-circle"
+  color: "blue"
