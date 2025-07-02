@@ -1,0 +1,47 @@
+# Node.js dependencies
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# TypeScript build output
+dist/
+build/
+
+# TypeScript cache
+*.tsbuildinfo
+
+# Local environment
+.env
+.env.local
+.env.*
+
+# OS-specific files
+.DS_Store
+Thumbs.db
+
+# VSCode settings
+.vscode/
+
+# Logs
+logs/
+*.log
+
+# Coverage reports
+coverage/
+*.lcov
+
+# IDE/project files
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+
+# Misc
+*.tgz
+*.swp
+
+# Test output
+test-output/
