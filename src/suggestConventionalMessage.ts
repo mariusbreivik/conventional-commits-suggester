@@ -5,24 +5,46 @@ const allowedTypes = [
 export function suggestConventionalMessage(message: string, allowedTypesInput: string[] = allowedTypes): string {
   const trimmed = message.trim();
 
+  // Empty or whitespace-only message
+  if (!trimmed) {
+    return "fix:";
+  }
+
+  // Case: type(scope): with no subject
+  const typeScopeNoSubject = /^(\w+)\(([^)]+)\):\s*$/.exec(trimmed);
+  if (typeScopeNoSubject) {
+    const [ , type, scope ] = typeScopeNoSubject;
+    if (allowedTypesInput.includes(type)) {
+      return `${type}(${scope}): `;
+    } else {
+      return `fix(${scope}): `;
+    }
+  }
+
   // Already conventional commit?
-  const conventional = /^(\w+)(\(\w+\))?: .+/.test(trimmed);
-  if (conventional) return trimmed;
+  const conventional = /^(\w+)(\([^)]+\))?: (.+)$/.exec(trimmed);
+  if (conventional) {
+    const [ , type, scopeWithParens, subject ] = conventional;
+    if (!allowedTypesInput.includes(type)) {
+      if (scopeWithParens) {
+        // e.g. improve(core): performance => fix(improve): performance
+        return `fix(${type}): ${subject}`;
+      } else {
+        // e.g. improve: performance => fix: performance
+        return `fix: ${subject}`;
+      }
+    }
+    return trimmed;
+  }
 
   // If single word, return 'fix: <word>'
   if (!/\s/.test(trimmed)) {
     return `fix: ${trimmed}`;
   }
 
-  // Already valid
-  if (/^[a-z]+(\([^)]+\))?:\s.+/.test(trimmed)) {
-    return trimmed;
-  }
-
   // Try to extract type and scope from message
   const words = trimmed.split(/\s+/);
 
-  // Detect type
   let type = "fix";
   let scope = "";
   let rest = trimmed;
@@ -30,22 +52,23 @@ export function suggestConventionalMessage(message: string, allowedTypesInput: s
   if (allowedTypesInput.includes(words[0].toLowerCase())) {
     type = words[0].toLowerCase();
     if (words.length > 2) {
-      // Use the second word as scope if it looks like a code area or file
       scope = words[1]
-        .replace(/[^a-zA-Z0-9-_]/g, "")
-        .toLowerCase();
+          .replace(/[^a-zA-Z0-9-_]/g, "")
+          .toLowerCase();
       rest = words.slice(2).join(" ");
     } else {
       rest = words.slice(1).join(" ");
     }
   } else {
-    // Try to guess a scope from the first or second word if it's a file/folder/tech term
+    // Always use 'fix' as type, and first word as scope
     if (words.length > 1) {
+      type = "fix";
       scope = words[0]
-        .replace(/[^a-zA-Z0-9-_]/g, "")
-        .toLowerCase();
+          .replace(/[^a-zA-Z0-9-_]/g, "")
+          .toLowerCase();
       rest = words.slice(1).join(" ");
     } else {
+      type = "fix";
       rest = trimmed;
     }
   }

@@ -14,20 +14,30 @@ export interface LintError {
 }
 
 export function lintCommits(
-  commits: Commit[],
-  allowedTypesInput: string[],
+    commits: Commit[],
+    allowedTypesInput: string[],
 ): LintError[] {
   const errors: LintError[] = [];
 
   for (const commit of commits) {
+    // Skip parsing if message is empty or whitespace
+    if (!commit.message || !commit.message.trim()) {
+      errors.push({
+        sha: commit.sha,
+        message: commit.message,
+        suggestion: suggestConventionalMessage(commit.message, allowedTypesInput),
+      });
+      continue;
+    }
+
     const parsed = parseConventional(commit.message);
 
     // Check for a valid type and format
     const isValid =
-      parsed.type &&
-      allowedTypesInput.includes(parsed.type) &&
-      parsed.subject &&
-      !parsed.subject.startsWith(" ");
+        parsed.type &&
+        allowedTypesInput.includes(parsed.type) &&
+        parsed.subject &&
+        !parsed.subject.startsWith(" ");
 
     if (!isValid) {
       errors.push({
