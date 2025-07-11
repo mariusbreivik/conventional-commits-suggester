@@ -1,0 +1,22 @@
+name: Conventional Commits Check
+
+on:
+  pull_request:
+    branches:
+      - main
+  push:
+    branches:
+      - main
+
+jobs:
+  conventional-commits:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Validate Conventional Commits
+        uses: ./
+        with:
+          suggestion_mode: "both"
+          fail_on_error: "true"
+          github_token: ${{ secrets.GITHUB_TOKEN }}
