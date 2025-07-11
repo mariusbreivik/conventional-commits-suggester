@@ -71,7 +71,21 @@ async function run() {
             core.setFailed("This action only supports pull_request or push events.");
             return;
         }
-        const errors = (0, conventionalCommitLint_1.lintCommits)(commits, allowedTypesInput);
+        // Fetch parents for each commit and skip merge commits (more than one parent)
+        const filteredCommits = [];
+        for (const commit of commits) {
+            const { data: commitData } = await octokit.rest.repos.getCommit({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                ref: commit.sha,
+            });
+            if (commitData.parents && commitData.parents.length > 1) {
+                core.info(`Skipping merge commit: ${commit.sha}`);
+                continue;
+            }
+            filteredCommits.push(commit);
+        }
+        const errors = (0, conventionalCommitLint_1.lintCommits)(filteredCommits, allowedTypesInput);
         if (errors.length === 0) {
             core.info("All commit messages follow Conventional Commits! 🚀");
             return;

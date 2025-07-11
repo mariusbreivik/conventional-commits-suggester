@@ -7,8 +7,8 @@ async function run() {
     const token = core.getInput("github_token", { required: true });
     const failOnError = core.getInput("fail_on_error") === "false" ? false : true;
     const allowedTypesInput = (core.getInput("allowed_types") || "feat,fix,chore,docs,refactor,test,ci,build,perf")
-      .split(",")
-      .map((t) => t.trim());
+        .split(",")
+        .map((t) => t.trim());
     const suggestionMode = core.getInput("suggestion_mode") || "summary";
 
     const context = github.context;
@@ -16,8 +16,9 @@ async function run() {
 
     // Get commits for PR or push
     let commits: Commit[] = [];
+
     if (context.eventName === "pull_request") {
-      const { data } = await octokit.rest.pulls.listCommits({
+      const {data} = await octokit.rest.pulls.listCommits({
         owner: context.repo.owner,
         repo: context.repo.repo,
         pull_number: context.payload.pull_request!.number,
@@ -38,7 +39,22 @@ async function run() {
       return;
     }
 
-    const errors = lintCommits(commits, allowedTypesInput);
+    // Fetch parents for each commit and skip merge commits (more than one parent)
+    const filteredCommits: Commit[] = [];
+    for (const commit of commits) {
+      const { data: commitData } = await octokit.rest.repos.getCommit({
+        owner: context.repo.owner,
+        repo: context.repo.repo,
+        ref: commit.sha,
+      });
+      if (commitData.parents && commitData.parents.length > 1) {
+        core.info(`Skipping merge commit: ${commit.sha}`);
+        continue;
+      }
+      filteredCommits.push(commit);
+    }
+
+    const errors = lintCommits(filteredCommits, allowedTypesInput);
 
     if (errors.length === 0) {
       core.info("All commit messages follow Conventional Commits! 🚀");
