@@ -6,11 +6,9 @@
       {
         "preset": "conventionalcommits",
         "releaseRules": [
-          { "type": "docs", "release": false },
           { "type": "chore", "release": false },
           { "type": "refactor", "release": false },
           { "type": "test", "release": false },
-          { "type": "style", "release": false }
         ]
       }
     ],
