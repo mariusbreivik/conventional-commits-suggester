@@ -1,3 +1,11 @@
+## [1.0.1](https://github.com/mariusbreivik/conventional-commits-suggester/compare/v1.0.0...v1.0.1) (2025-07-11)
+
+
+### Bug Fixes
+
+* Potential fix for code scanning alert no. 2: Workflow does not contain permissions ([d7a0857](https://github.com/mariusbreivik/conventional-commits-suggester/commit/d7a0857107987b6c142fca9b68829efdaa8b1587))
+* releaserc did not validate ([8434578](https://github.com/mariusbreivik/conventional-commits-suggester/commit/84345781847cf01c2998dc6b8e1979a81346dc10))
+
 # 1.0.0 (2025-07-11)
 
 
