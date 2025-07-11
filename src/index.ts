@@ -16,10 +16,9 @@ async function run() {
 
     // Get commits for PR or push
     let commits: Commit[] = [];
-    let commitShas: string[] = [];
 
     if (context.eventName === "pull_request") {
-      const { data } = await octokit.rest.pulls.listCommits({
+      const {data} = await octokit.rest.pulls.listCommits({
         owner: context.repo.owner,
         repo: context.repo.repo,
         pull_number: context.payload.pull_request!.number,
@@ -29,14 +28,12 @@ async function run() {
         message: c.commit.message,
         author: c.commit.author?.name ?? "unknown",
       }));
-      commitShas = data.map((c) => c.sha);
     } else if (context.eventName === "push") {
       commits = (context.payload.commits || []).map((c: any) => ({
         sha: c.id,
         message: c.message,
         author: c.author?.name ?? "unknown",
       }));
-      commitShas = (context.payload.commits || []).map((c: any) => c.id);
     } else {
       core.setFailed("This action only supports pull_request or push events.");
       return;
