@@ -8,7 +8,7 @@
         "releaseRules": [
           { "type": "chore", "release": false },
           { "type": "refactor", "release": false },
-          { "type": "test", "release": false },
+          { "type": "test", "release": false }
         ]
       }
     ],
