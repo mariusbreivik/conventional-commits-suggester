@@ -13,14 +13,29 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          fetch-depth: 0 # full history to generate changelog and tags
+          fetch-depth: 0
 
-      - uses: actions/setup-node@v4
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: '20'
+          cache: 'npm'
 
       - name: Install dependencies
         run: npm ci
+
+      - name: Build action
+        run: npm run build
+
+      # If you want to check that dist/ is actually present and updated:
+      - name: Check dist contents
+        run: ls -l dist/
+
+      # Add dist/ and package-lock.json to git for semantic-release if needed
+      - name: Prepare files for release
+        run: |
+          git add dist/
+          git add package-lock.json || true
 
       - name: Run semantic-release
         env:
