@@ -7,8 +7,8 @@ async function run() {
     const token = core.getInput("github_token", { required: true });
     const failOnError = core.getInput("fail_on_error") === "false" ? false : true;
     const allowedTypesInput = (core.getInput("allowed_types") || "feat,fix,chore,docs,refactor,test,ci,build,perf")
-      .split(",")
-      .map((t) => t.trim());
+        .split(",")
+        .map((t) => t.trim());
     const suggestionMode = core.getInput("suggestion_mode") || "summary";
 
     const context = github.context;
@@ -16,6 +16,8 @@ async function run() {
 
     // Get commits for PR or push
     let commits: Commit[] = [];
+    let commitShas: string[] = [];
+
     if (context.eventName === "pull_request") {
       const { data } = await octokit.rest.pulls.listCommits({
         owner: context.repo.owner,
@@ -27,18 +29,35 @@ async function run() {
         message: c.commit.message,
         author: c.commit.author?.name ?? "unknown",
       }));
+      commitShas = data.map((c) => c.sha);
     } else if (context.eventName === "push") {
       commits = (context.payload.commits || []).map((c: any) => ({
         sha: c.id,
         message: c.message,
         author: c.author?.name ?? "unknown",
       }));
+      commitShas = (context.payload.commits || []).map((c: any) => c.id);
     } else {
       core.setFailed("This action only supports pull_request or push events.");
       return;
     }
 
-    const errors = lintCommits(commits, allowedTypesInput);
+    // Fetch parents for each commit and skip merge commits (more than one parent)
+    const filteredCommits: Commit[] = [];
+    for (const commit of commits) {
+      const { data: commitData } = await octokit.rest.repos.getCommit({
+        owner: context.repo.owner,
+        repo: context.repo.repo,
+        ref: commit.sha,
+      });
+      if (commitData.parents && commitData.parents.length > 1) {
+        core.info(`Skipping merge commit: ${commit.sha}`);
+        continue;
+      }
+      filteredCommits.push(commit);
+    }
+
+    const errors = lintCommits(filteredCommits, allowedTypesInput);
 
     if (errors.length === 0) {
       core.info("All commit messages follow Conventional Commits! 🚀");
