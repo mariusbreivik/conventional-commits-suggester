@@ -1,3 +1,10 @@
+## [1.0.2](https://github.com/mariusbreivik/conventional-commits-suggester/compare/v1.0.1...v1.0.2) (2025-07-12)
+
+
+### Bug Fixes
+
+* semantic-release should update version in package.json ([9b0a1d3](https://github.com/mariusbreivik/conventional-commits-suggester/commit/9b0a1d3ba8059bac1b6c16769c320975bbb5a345))
+
 ## [1.0.1](https://github.com/mariusbreivik/conventional-commits-suggester/compare/v1.0.0...v1.0.1) (2025-07-11)
 
 
