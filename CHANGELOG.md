@@ -1,3 +1,10 @@
+## [1.0.3](https://github.com/mariusbreivik/conventional-commits-suggester/compare/v1.0.2...v1.0.3) (2025-07-12)
+
+
+### Bug Fixes
+
+* semantic-release uses npm-module to update the package.json ([132f2a2](https://github.com/mariusbreivik/conventional-commits-suggester/commit/132f2a261df7290def342d6c2c3f940606480e01))
+
 ## [1.0.2](https://github.com/mariusbreivik/conventional-commits-suggester/compare/v1.0.1...v1.0.2) (2025-07-12)
 
 
