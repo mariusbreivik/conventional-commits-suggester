@@ -1,0 +1,8 @@
+{
+  "extends": "./tsconfig.json",
+  "include": [
+    "src",
+    "test",
+    "node_modules/@types/jest/index.d.ts"
+  ]
+}

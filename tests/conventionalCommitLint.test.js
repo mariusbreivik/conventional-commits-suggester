@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-const conventionalCommitLint_1 = require("./conventionalCommitLint");
+const conventionalCommitLint_1 = require("../src/conventionalCommitLint");
 describe("lintCommits", () => {
     const allowedTypes = [
         "feat", "fix", "chore", "docs", "refactor", "test", "ci", "build", "perf"

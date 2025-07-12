@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-const suggestConventionalMessage_1 = require("./suggestConventionalMessage");
+const suggestConventionalMessage_1 = require("../src/suggestConventionalMessage");
 describe("suggestConventionalMessage", () => {
     it("returns original if already conventional", () => {
         expect((0, suggestConventionalMessage_1.suggestConventionalMessage)("feat(parser): add parser support")).toBe("feat(parser): add parser support");

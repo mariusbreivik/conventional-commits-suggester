@@ -1,4 +1,4 @@
-import { lintCommits, Commit } from "./conventionalCommitLint";
+import { lintCommits, Commit } from "../src/conventionalCommitLint";
 
 describe("lintCommits", () => {
     const allowedTypes = [

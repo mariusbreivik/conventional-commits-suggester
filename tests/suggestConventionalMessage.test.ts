@@ -1,4 +1,4 @@
-import { suggestConventionalMessage } from "./suggestConventionalMessage";
+import { suggestConventionalMessage } from "../src/suggestConventionalMessage";
 
 describe("suggestConventionalMessage", () => {
   it("returns original if already conventional", () => {
