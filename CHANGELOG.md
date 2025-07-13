@@ -1,3 +1,13 @@
+## [1.0.4](https://github.com/mariusbreivik/conventional-commits-suggester/compare/v1.0.3...v1.0.4) (2025-07-13)
+
+
+### Bug Fixes
+
+* add workflow permission ([12fcf31](https://github.com/mariusbreivik/conventional-commits-suggester/commit/12fcf31c02624c0af7044510636c128068576a85))
+* added better error handling ([04ff351](https://github.com/mariusbreivik/conventional-commits-suggester/commit/04ff3514c9de3c1ca1c144ea8a2e51b2e68b26e1))
+* made the release process manual ([c04563a](https://github.com/mariusbreivik/conventional-commits-suggester/commit/c04563a8d7d7463ff54b2a4d532c0ad6edc082ee))
+* removed misplaced .gitignore file ([5d1bf5f](https://github.com/mariusbreivik/conventional-commits-suggester/commit/5d1bf5f655a1466c9f19c5b25442ac034625ea66))
+
 ## [1.0.3](https://github.com/mariusbreivik/conventional-commits-suggester/compare/v1.0.2...v1.0.3) (2025-07-12)
 
 
