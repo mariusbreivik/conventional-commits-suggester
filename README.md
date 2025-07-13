@@ -95,8 +95,20 @@ If a commit message is invalid, you'll see something like:
 
 ```
 - `abc1234`: **bad commit message**
+  - Reason: Unknown commit type 'bad'
   - Suggestion: `fix: bad commit message`
 ```
+
+---
+
+## ⚠️ Error Reasons
+
+- **Commit message is empty.**: No message was provided.
+- **Missing commit type.**: The type (e.g., `fix`, `feat`) was not found.
+- **Unknown commit type:**: The type used is not allowed (see config).
+- **Missing subject.**: No subject after the type/scope.
+- **Subject starts with a space.**: The subject has a leading space.
+- (More reasons may be added as checks expand.)
 
 ---
 

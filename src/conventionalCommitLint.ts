@@ -11,6 +11,7 @@ export interface LintError {
   sha: string;
   message: string;
   suggestion: string;
+  reason: string; // New field for detailed error reason
 }
 
 export function lintCommits(
@@ -20,32 +21,60 @@ export function lintCommits(
   const errors: LintError[] = [];
 
   for (const commit of commits) {
-    // Skip parsing if message is empty or whitespace
     if (!commit.message || !commit.message.trim()) {
       errors.push({
         sha: commit.sha,
         message: commit.message,
         suggestion: suggestConventionalMessage(commit.message, allowedTypesInput),
+        reason: "Commit message is empty.",
       });
       continue;
     }
 
     const parsed = parseConventional(commit.message);
 
-    // Check for a valid type and format
-    const isValid =
-        parsed.type &&
-        allowedTypesInput.includes(parsed.type) &&
-        parsed.subject &&
-        !parsed.subject.startsWith(" ");
-
-    if (!isValid) {
+    if (!parsed.type) {
       errors.push({
         sha: commit.sha,
         message: commit.message,
         suggestion: suggestConventionalMessage(commit.message, allowedTypesInput),
+        reason: "Missing commit type.",
+      });
+      continue;
+    }
+
+    if (!allowedTypesInput.includes(parsed.type)) {
+      errors.push({
+        sha: commit.sha,
+        message: commit.message,
+        suggestion: suggestConventionalMessage(commit.message, allowedTypesInput),
+        reason: `Unknown commit type: '${parsed.type}' (allowed: ${allowedTypesInput.join(", ")})`,
+      });
+      continue;
+    }
+
+    if (!parsed.subject) {
+      errors.push({
+        sha: commit.sha,
+        message: commit.message,
+        suggestion: suggestConventionalMessage(commit.message, allowedTypesInput),
+        reason: "Missing subject.",
+      });
+      continue;
+    }
+
+    if (parsed.subject.startsWith(" ")) {
+      errors.push({
+        sha: commit.sha,
+        message: commit.message,
+        suggestion: suggestConventionalMessage(commit.message, allowedTypesInput),
+        reason: "Subject starts with a space.",
       });
     }
+
+    // Add more specific error checks here as needed
+
+    // If valid, do nothing
   }
 
   return errors;

@@ -21,17 +21,17 @@ describe("lintCommits", () => {
         ];
         const errors = lintCommits(commits, allowedTypes);
         expect(errors).toHaveLength(2);
-
         expect(errors[0]).toMatchObject({
             sha: "c3",
             message: "updated dependencies",
-            suggestion: "fix(updated): dependencies"
+            suggestion: "fix(updated): dependencies",
+            reason: "Missing commit type.",
         });
-
         expect(errors[1]).toMatchObject({
             sha: "d4",
             message: "fix login bug",
-            suggestion: "fix(login): bug"
+            suggestion: "fix(login): bug",
+            reason: "Missing commit type.",
         });
     });
 
@@ -47,6 +47,7 @@ describe("lintCommits", () => {
         const errors = lintCommits(commits, allowedTypes);
         expect(errors).toHaveLength(1);
         expect(errors[0].suggestion).toBe("fix: refactor");
+        expect(errors[0].reason).toMatch(/Missing commit type/);
     });
 
     it("flags commit with bad type", () => {
@@ -56,6 +57,7 @@ describe("lintCommits", () => {
         const errors = lintCommits(commits, allowedTypes);
         expect(errors).toHaveLength(1);
         expect(errors[0].suggestion).toBe("fix(improve): performance");
+        expect(errors[0].reason).toMatch(/Unknown commit type: 'improve'/);
     });
 
     it("accepts allowedTypes override", () => {
@@ -75,6 +77,7 @@ describe("lintCommits", () => {
         const errors = lintCommits(commits, allowedTypes);
         expect(errors).toHaveLength(1);
         expect(errors[0].suggestion).toBe("fix(core): ");
+        expect(errors[0].reason).toMatch(/Missing subject/);
     });
 
     it("handles commit with leading/trailing whitespace", () => {
@@ -84,6 +87,7 @@ describe("lintCommits", () => {
         const errors = lintCommits(commits, allowedTypes);
         expect(errors).toHaveLength(1);
         expect(errors[0].suggestion).toBe("fix(login): bug");
+        expect(errors[0].reason).toMatch(/Missing commit type/);
     });
 
     it("flags commit with only type", () => {
@@ -93,6 +97,7 @@ describe("lintCommits", () => {
         const errors = lintCommits(commits, allowedTypes);
         expect(errors).toHaveLength(1);
         expect(errors[0].suggestion).toBe("fix: fix:");
+        expect(errors[0].reason).toMatch(/Missing commit type./);
     });
 
     it("flags commit with invalid format but valid type", () => {
@@ -102,6 +107,7 @@ describe("lintCommits", () => {
         const errors = lintCommits(commits, allowedTypes);
         expect(errors).toHaveLength(1);
         expect(errors[0].suggestion).toBe("fix(-): login issue!");
+        expect(errors[0].reason).toMatch(/Missing commit type/);
     });
 
     it("handles emoji in commit message", () => {
@@ -121,6 +127,7 @@ describe("lintCommits", () => {
         expect(errors).toHaveLength(1);
         // The suggestion for empty message should be "fix:"
         expect(errors[0].suggestion).toBe("fix:");
+        expect(errors[0].reason).toMatch(/empty/);
     });
 
     it("does not flag conventional commit with extra linebreaks", () => {
@@ -138,6 +145,7 @@ describe("lintCommits", () => {
         const errors = lintCommits(commits, allowedTypes);
         expect(errors).toHaveLength(1);
         expect(errors[0].suggestion).toBe("fix(core):  bad subject");
+        expect(errors[0].reason).toMatch(/Subject starts with a space/);
     });
 
     it("handles commit with special chars in scope", () => {

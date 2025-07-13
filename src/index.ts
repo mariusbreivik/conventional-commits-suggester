@@ -18,7 +18,7 @@ async function run() {
     let commits: Commit[] = [];
 
     if (context.eventName === "pull_request") {
-      const {data} = await octokit.rest.pulls.listCommits({
+      const { data } = await octokit.rest.pulls.listCommits({
         owner: context.repo.owner,
         repo: context.repo.repo,
         pull_number: context.payload.pull_request!.number,
@@ -63,7 +63,7 @@ async function run() {
 
     let summary = "## 🚨 Conventional Commit Lint Errors\n";
     for (const err of errors) {
-      summary += `- \`${err.sha.slice(0, 7)}\`: **${err.message.split("\n")[0]}**\n  - Suggestion: \`${err.suggestion}\`\n`;
+      summary += `- \`${err.sha.slice(0, 7)}\`: **${err.message.split("\n")[0]}**\n  - Reason: ${err.reason}\n  - Suggestion: \`${err.suggestion}\`\n`;
     }
     core.summary.addRaw(summary).write();
 
