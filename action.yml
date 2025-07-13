@@ -21,4 +21,4 @@ runs:
   main: "dist/index.js"
 branding:
   icon: "check-circle"
-  color: "blue"
+  color: "bluee"
