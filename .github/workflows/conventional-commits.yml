@@ -8,6 +8,9 @@ on:
     branches:
       - main
 
+permissions:
+  contents: read
+
 jobs:
   conventional-commits:
     runs-on: ubuntu-latest
