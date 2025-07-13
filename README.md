@@ -8,7 +8,7 @@ A GitHub Action to enforce [Conventional Commits](https://www.conventionalcommit
 
 ## 🎯 Goal
 
-Ensure all commit messages in your repository follow the Conventional Commits standard, making your history clean, automatable, and release-friendly. If a message doesn't comply, this action will suggest a fix—right in the workflow summary or as a PR comment.
+Ensure all commit messages in your repository follow the Conventional Commits standard, making your history clean, automatable, and release-friendly. If a message doesn't comply, this action will suggest a correction right in your PR or workflow summary!
 
 ---
 
@@ -20,6 +20,7 @@ Ensure all commit messages in your repository follow the Conventional Commits st
 - ⚙️ Configurable commit types, fail/warn modes, and output options
 - 🔒 Easy setup, works with all GitHub-hosted runners
 - 📦 Published on [GitHub Marketplace](https://github.com/marketplace/actions/conventional-commits-suggester)
+- 🛡️ Improved error handling for commit message validation (v1.0.4+)
 
 ---
 
@@ -109,6 +110,7 @@ If a commit message is invalid, you'll see something like:
 - **Missing subject.**: No subject after the type/scope.
 - **Subject starts with a space.**: The subject has a leading space.
 - (More reasons may be added as checks expand.)
+- **Errors are now reported with improved clarity and detail (v1.0.4+)**
 
 ---
 
@@ -117,6 +119,7 @@ If a commit message is invalid, you'll see something like:
 - **Merge commits are automatically skipped** (not checked for Conventional Commit compliance).
 - Action works on both `push` and `pull_request` workflows.
 - For best results, squash and merge PRs with proper commit messages.
+- Recent improvements have made error reporting more robust and user-friendly.
 
 ---
 
