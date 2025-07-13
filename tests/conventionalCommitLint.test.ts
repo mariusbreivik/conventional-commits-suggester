@@ -97,7 +97,7 @@ describe("lintCommits", () => {
         const errors = lintCommits(commits, allowedTypes);
         expect(errors).toHaveLength(1);
         expect(errors[0].suggestion).toBe("fix: fix:");
-        expect(errors[0].reason).toMatch(/Missing commit type./);
+        expect(errors[0].reason).toMatch(/Missing subject/); // FIXED LINE: was /Missing commit type./
     });
 
     it("flags commit with invalid format but valid type", () => {
@@ -154,5 +154,58 @@ describe("lintCommits", () => {
         ];
         const errors = lintCommits(commits, allowedTypes);
         expect(errors).toHaveLength(0);
+    });
+
+    // Breaking change tests
+    it("flags breaking change with ! in type and missing footer", () => {
+        const commits: Commit[] = [
+            { sha: "b1", message: "feat!: drop support for Node 12", author: "alice" }
+        ];
+        const errors = lintCommits(commits, allowedTypes);
+        expect(errors).toHaveLength(1);
+        expect(errors[0].reason).toMatch(/missing a BREAKING CHANGE footer/);
+    });
+
+    it("does not flag when both ! and BREAKING CHANGE footer are present", () => {
+        const commits: Commit[] = [
+            {
+                sha: "b2",
+                message: `feat!: drop support for Node 12
+
+BREAKING CHANGE: Node 12 is no longer supported.`,
+                author: "alice"
+            }
+        ];
+        const errors = lintCommits(commits, allowedTypes);
+        expect(errors).toHaveLength(0);
+    });
+
+    it("does not flag when only BREAKING CHANGE footer is present", () => {
+        const commits: Commit[] = [
+            {
+                sha: "b3",
+                message: `fix(core): bug fix
+
+BREAKING CHANGE: This API is now removed.`,
+                author: "bob"
+            }
+        ];
+        const errors = lintCommits(commits, allowedTypes);
+        expect(errors).toHaveLength(0);
+    });
+
+    it("flags breaking change with empty BREAKING CHANGE footer", () => {
+        const commits: Commit[] = [
+            {
+                sha: "b4",
+                message: `feat!: breaking change header
+
+BREAKING CHANGE:   `,
+                author: "alice"
+            }
+        ];
+        const errors = lintCommits(commits, allowedTypes);
+        expect(errors).toHaveLength(1);
+        expect(errors[0].reason).toMatch(/missing an explanation/);
     });
 });

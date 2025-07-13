@@ -4,4 +4,8 @@ updates:
     directory: "/"
     schedule:
       interval: "daily"
-    commit-message: "skip[ci]: update npm dependencies"
+    commit-message:
+      prefix: "chore"
+      include: "scope"
+      prefix-development: "chore"
+      body: "[skip ci]"
