@@ -67,7 +67,11 @@ async function run() {
     }
     core.summary.addRaw(summary).write();
 
-    if (suggestionMode.includes("comment") && context.eventName === "pull_request") {
+    const mode = suggestionMode.trim().toLowerCase();
+    if (
+        (mode === "comment" || mode === "both") &&
+        context.eventName === "pull_request"
+    ) {
       await octokit.rest.issues.createComment({
         owner: context.repo.owner,
         repo: context.repo.repo,
