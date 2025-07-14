@@ -6,10 +6,11 @@
   "scripts": {
     "build": "ncc build src/index.ts -o dist",
     "typecheck": "tsc --noEmit -p tsconfig.test.json",
-    "lint": "eslint . --ext .ts",
+    "lint": "eslint src",
     "test": "jest",
     "prepare": "npm run build"
   },
+  "type": "module",
   "keywords": [
     "github-action",
     "conventional-commits",
