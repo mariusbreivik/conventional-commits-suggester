@@ -1,3 +1,11 @@
+## [1.0.5](https://github.com/mariusbreivik/conventional-commits-suggester/compare/v1.0.4...v1.0.5) (2025-07-14)
+
+
+### Bug Fixes
+
+* **bug:** fixed error when suggestion_mode=both ([013c1a2](https://github.com/mariusbreivik/conventional-commits-suggester/commit/013c1a253f3faf7df8568e67cdc60d1010593a6a))
+* **lint:** robust detection for breaking changes and missing subject ([bc9fb17](https://github.com/mariusbreivik/conventional-commits-suggester/commit/bc9fb175969cbcb8c7bb4d6ff1bee0667a3b9334))
+
 ## [1.0.4](https://github.com/mariusbreivik/conventional-commits-suggester/compare/v1.0.3...v1.0.4) (2025-07-13)
 
 

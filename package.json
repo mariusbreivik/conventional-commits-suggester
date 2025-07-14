@@ -1,6 +1,6 @@
 {
   "name": "conventional-commits-suggester",
-  "version": "1.0.4",
+  "version": "1.0.5",
   "description": "A GitHub Action to suggest and enforce Conventional Commits.",
   "main": "dist/index.js",
   "scripts": {

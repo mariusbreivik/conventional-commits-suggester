@@ -51150,7 +51150,23 @@ function lintCommits(commits, allowedTypesInput) {
             continue;
         }
         const parsed = (0, conventional_commits_parser_1.sync)(commit.message);
-        if (!parsed.type) {
+        // --- Robust type and breaking detection ---
+        let commitType = parsed.type;
+        let breakingTypeBang = false;
+        // If type is missing but header exists, try to manually parse for type and bang
+        if (!commitType && parsed.header) {
+            // Match "type!:" or "type(scope)!:" or "type(scope):"
+            const headerMatch = /^([a-zA-Z0-9]+)(!?)(\([^)]+\))?:/.exec(parsed.header);
+            if (headerMatch) {
+                commitType = headerMatch[1];
+                breakingTypeBang = headerMatch[2] === '!';
+            }
+        }
+        else if (commitType && commitType.endsWith('!')) {
+            breakingTypeBang = true;
+            commitType = commitType.slice(0, -1);
+        }
+        if (!commitType) {
             errors.push({
                 sha: commit.sha,
                 message: commit.message,
@@ -51159,16 +51175,47 @@ function lintCommits(commits, allowedTypesInput) {
             });
             continue;
         }
-        if (!allowedTypesInput.includes(parsed.type)) {
+        if (!allowedTypesInput.includes(commitType)) {
             errors.push({
                 sha: commit.sha,
                 message: commit.message,
                 suggestion: (0, suggestConventionalMessage_1.suggestConventionalMessage)(commit.message, allowedTypesInput),
-                reason: `Unknown commit type: '${parsed.type}' (allowed: ${allowedTypesInput.join(", ")})`,
+                reason: `Unknown commit type: '${commitType}' (allowed: ${allowedTypesInput.join(", ")})`,
             });
             continue;
         }
-        if (!parsed.subject) {
+        // --- Breaking change detection: check for ! in type and missing BREAKING CHANGE footer ---
+        const hasBreakingChangeNote = Array.isArray(parsed.notes) && parsed.notes.some(note => note.title &&
+            /^BREAKING[\s-]CHANGE$/i.test(note.title.trim()));
+        if (breakingTypeBang && !hasBreakingChangeNote) {
+            errors.push({
+                sha: commit.sha,
+                message: commit.message,
+                suggestion: commit.message + "\n\nBREAKING CHANGE: <describe breaking change>",
+                reason: "Commit marks a breaking change (with '!'), but is missing a BREAKING CHANGE footer with an explanation.",
+            });
+            continue;
+        }
+        // Optionally, also warn if BREAKING CHANGE footer is present but empty
+        let hasEmptyBreakingNote = false;
+        if (Array.isArray(parsed.notes)) {
+            hasEmptyBreakingNote = parsed.notes.some(note => note.title &&
+                /^BREAKING[\s-]CHANGE$/i.test(note.title.trim()) &&
+                (!note.text || !note.text.trim()));
+        }
+        if (hasEmptyBreakingNote) {
+            errors.push({
+                sha: commit.sha,
+                message: commit.message,
+                suggestion: commit.message + "\n\nBREAKING CHANGE: <describe breaking change>",
+                reason: "Commit marks a breaking change, but the BREAKING CHANGE footer is missing an explanation.",
+            });
+            continue;
+        }
+        // Now check for missing subject ONLY IF NOT a valid breaking change commit
+        // (If this is a breaking change with ! and a valid footer, do not require a subject)
+        if ((!parsed.subject || !parsed.subject.trim()) &&
+            !(breakingTypeBang && hasBreakingChangeNote)) {
             errors.push({
                 sha: commit.sha,
                 message: commit.message,
@@ -51177,7 +51224,7 @@ function lintCommits(commits, allowedTypesInput) {
             });
             continue;
         }
-        if (parsed.subject.startsWith(" ")) {
+        if (parsed.subject && parsed.subject.startsWith(" ")) {
             errors.push({
                 sha: commit.sha,
                 message: commit.message,
@@ -51185,7 +51232,6 @@ function lintCommits(commits, allowedTypesInput) {
                 reason: "Subject starts with a space.",
             });
         }
-        // Add more specific error checks here as needed
         // If valid, do nothing
     }
     return errors;
@@ -51295,7 +51341,9 @@ async function run() {
             summary += `- \`${err.sha.slice(0, 7)}\`: **${err.message.split("\n")[0]}**\n  - Reason: ${err.reason}\n  - Suggestion: \`${err.suggestion}\`\n`;
         }
         core.summary.addRaw(summary).write();
-        if (suggestionMode.includes("comment") && context.eventName === "pull_request") {
+        const mode = suggestionMode.trim().toLowerCase();
+        if ((mode === "comment" || mode === "both") &&
+            context.eventName === "pull_request") {
             await octokit.rest.issues.createComment({
                 owner: context.repo.owner,
                 repo: context.repo.repo,
