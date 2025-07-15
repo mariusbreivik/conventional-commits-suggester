@@ -1,3 +1,10 @@
+## [1.0.8](https://github.com/mariusbreivik/conventional-commits-suggester/compare/v1.0.7...v1.0.8) (2025-07-15)
+
+
+### Bug Fixes
+
+* **config:** .releaserc did not generate changelog file ([a00168a](https://github.com/mariusbreivik/conventional-commits-suggester/commit/a00168ad7393526535b7a54333b2ace2f30874d0))
+
 ## [1.0.7](https://github.com/mariusbreivik/conventional-commits-suggester/compare/v1.0.6...v1.0.7) (2025-07-15)
 
 ## [1.0.6](https://github.com/mariusbreivik/conventional-commits-suggester/compare/v1.0.5...v1.0.6) (2025-07-15)
