@@ -1,3 +1,10 @@
+## [1.0.9](https://github.com/mariusbreivik/conventional-commits-suggester/compare/v1.0.8...v1.0.9) (2025-07-24)
+
+
+### Bug Fixes
+
+* **config:** maintain floating major versions ([069ee24](https://github.com/mariusbreivik/conventional-commits-suggester/commit/069ee247eb0d74771b3c3d3e52115a0cb23fe8bd))
+
 ## [1.0.8](https://github.com/mariusbreivik/conventional-commits-suggester/compare/v1.0.7...v1.0.8) (2025-07-15)
 
 
