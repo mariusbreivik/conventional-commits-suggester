@@ -40,3 +40,24 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: npx semantic-release
+
+      - name: Update major version tag
+        run: |
+          # Get the latest tag from the repo
+          VERSION=$(git describe --tags --abbrev=0)
+          echo "Latest release tag: $VERSION"
+
+          # Only process tags that look like v1.2.3
+          if [[ "$VERSION" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            MAJOR="${VERSION%%.*}"  # Extract major (e.g. v1 from v1.2.3)
+            echo "Detected major version: $MAJOR"
+
+            git config user.name "github-actions[bot]"
+            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+            git fetch --tags
+            git tag -f "$MAJOR" "$VERSION"
+            git push origin "$MAJOR" --force
+          else
+            echo "No valid semantic version tag found, skipping major tag update."
+          fi
