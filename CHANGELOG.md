@@ -1,3 +1,10 @@
+## [1.0.10](https://github.com/mariusbreivik/conventional-commits-suggester/compare/v1.0.9...v1.0.10) (2025-07-26)
+
+
+### Bug Fixes
+
+* **scope:** allow project-specific and symbolic scopes in suggestion logic ([4ea0d41](https://github.com/mariusbreivik/conventional-commits-suggester/commit/4ea0d4170c32fd74e4148e9ff4c5a28c94846bfd))
+
 ## [1.0.9](https://github.com/mariusbreivik/conventional-commits-suggester/compare/v1.0.8...v1.0.9) (2025-07-24)
 
 

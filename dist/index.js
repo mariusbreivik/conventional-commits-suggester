@@ -30562,6 +30562,46 @@ exports.suggestConventionalMessage = suggestConventionalMessage;
 const allowedTypes = [
     "feat", "fix", "chore", "docs", "refactor", "test", "ci", "build", "perf"
 ];
+// Add more project-specific scopes here if needed
+const allowedScopes = [
+    "core",
+    "api",
+    "auth",
+    "cli",
+    "ui",
+    "db",
+    "deps",
+    "config",
+    "build",
+    "test",
+    "docs",
+    "ci",
+    "server",
+    "client",
+    "router",
+    "utils",
+    "styles",
+    "assets",
+    "release",
+    "docker",
+    "lint",
+    "env",
+    "integration",
+    "feature",
+    "performance",
+    "security",
+    "improve",
+    "-"
+];
+const stopwords = [
+    "a", "an", "the", "my", "your", "our", "this", "that", "these", "those"
+];
+function isValidScope(scope, allowedScopes = []) {
+    const normalized = scope.toLowerCase();
+    return (!stopwords.includes(normalized) &&
+        (/^[a-zA-Z0-9-_]+$/.test(normalized) || normalized === '-' || normalized === '_') &&
+        (normalized.length > 2 || normalized === '-' || normalized === '_')) || allowedScopes.includes(normalized);
+}
 function suggestConventionalMessage(message, allowedTypesInput = allowedTypes) {
     const trimmed = message.trim();
     // Empty or whitespace-only message
@@ -30572,24 +30612,23 @@ function suggestConventionalMessage(message, allowedTypesInput = allowedTypes) {
     const typeScopeNoSubject = /^(\w+)\(([^)]+)\):\s*$/.exec(trimmed);
     if (typeScopeNoSubject) {
         const [, type, scope] = typeScopeNoSubject;
-        if (allowedTypesInput.includes(type)) {
+        if (allowedTypesInput.includes(type) && isValidScope(scope, allowedScopes)) {
             return `${type}(${scope}): `;
         }
         else {
-            return `fix(${scope}): `;
+            return `fix: `;
         }
     }
     // Already conventional commit?
     const conventional = /^(\w+)(\([^)]+\))?: (.+)$/.exec(trimmed);
     if (conventional) {
-        const [, type, scopeWithParens, subject] = conventional;
+        const [, type, , subject] = conventional; // <-- fixed here
         if (!allowedTypesInput.includes(type)) {
-            if (scopeWithParens) {
-                // e.g. improve(core): performance => fix(improve): performance
+            // If type is not allowed, but is a valid scope, use it as scope
+            if (isValidScope(type, allowedScopes)) {
                 return `fix(${type}): ${subject}`;
             }
             else {
-                // e.g. improve: performance => fix: performance
                 return `fix: ${subject}`;
             }
         }
@@ -30607,26 +30646,33 @@ function suggestConventionalMessage(message, allowedTypesInput = allowedTypes) {
     if (allowedTypesInput.includes(words[0].toLowerCase())) {
         type = words[0].toLowerCase();
         if (words.length > 2) {
-            scope = words[1]
-                .replace(/[^a-zA-Z0-9-_]/g, "")
-                .toLowerCase();
-            rest = words.slice(2).join(" ");
+            const candidateScope = words[1].replace(/[^a-zA-Z0-9-_]/g, "").toLowerCase();
+            if (isValidScope(candidateScope, allowedScopes)) {
+                scope = candidateScope;
+                rest = words.slice(2).join(" ");
+            }
+            else {
+                scope = "";
+                rest = words.slice(1).join(" ");
+            }
         }
         else {
             rest = words.slice(1).join(" ");
         }
     }
     else {
-        // Always use 'fix' as type, and first word as scope
         if (words.length > 1) {
-            type = "fix";
-            scope = words[0]
-                .replace(/[^a-zA-Z0-9-_]/g, "")
-                .toLowerCase();
-            rest = words.slice(1).join(" ");
+            const candidateScope = words[0].replace(/[^a-zA-Z0-9-_]/g, "").toLowerCase();
+            if (isValidScope(candidateScope, allowedScopes)) {
+                scope = candidateScope;
+                rest = words.slice(1).join(" ");
+            }
+            else {
+                scope = "";
+                rest = trimmed;
+            }
         }
         else {
-            type = "fix";
             rest = trimmed;
         }
     }
