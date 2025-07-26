@@ -135,6 +135,7 @@ Commit scopes help specify which part of the codebase a commit affects.
 The following scopes are recognized by default:
 - `core`, `api`, `auth`, `cli`, `ui`, `db`, `deps`, `config`, `build`, `test`, `docs`, `ci`, `server`, `client`, `router`, `utils`, `styles`, `assets`, `release`, `docker`, `lint`, `env`, `integration`, `feature`, `performance`, `security`, `improve`, `-`
 
+Note: The dash (`-`) represents an empty or unspecified scope. It can be used when a commit does not pertain to a specific part of the codebase.
 ---
 
 ## ⚠️ Notes
