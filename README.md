@@ -8,7 +8,7 @@ A GitHub Action to enforce [Conventional Commits](https://www.conventionalcommit
 
 ## 🎯 Goal
 
-Ensure all commit messages in your repository follow the Conventional Commits standard, making your history clean, automatable, and release-friendly. If a message doesn't comply, this action will suggest a correction right in your PR or workflow summary!
+Ensure all commit messages in your repository follow the Conventional Commits standard, making your history clean, automatable, and release-friendly. If a message doesn't comply, this action will suggest a compliant message.
 
 ---
 
@@ -112,6 +112,30 @@ If a commit message is invalid, you'll see something like:
 - (More reasons may be added as checks expand.)
 - **Errors are now reported with improved clarity and detail (v1.0.4+)**
 
+---
+
+## ⚡ Allowed Commit Types and Scopes
+
+### Allowed Commit Types
+By default, these commit types are supported:
+- `feat`
+- `fix`
+- `chore`
+- `docs`
+- `refactor`
+- `test`
+- `ci`
+- `build`
+- `perf`
+
+You can customize allowed types using the `allowed_types` input in your workflow.
+
+### Allowed Scopes
+Commit scopes help specify which part of the codebase a commit affects.  
+The following scopes are recognized by default:
+- `core`, `api`, `auth`, `cli`, `ui`, `db`, `deps`, `config`, `build`, `test`, `docs`, `ci`, `server`, `client`, `router`, `utils`, `styles`, `assets`, `release`, `docker`, `lint`, `env`, `integration`, `feature`, `performance`, `security`, `improve`, `-`
+
+Note: The dash (`-`) represents an empty or unspecified scope. It can be used when a commit does not pertain to a specific part of the codebase.
 ---
 
 ## ⚠️ Notes
