@@ -47,6 +47,19 @@ function isValidScope(scope: string, allowedScopes: string[] = []) {
   ) || allowedScopes.includes(normalized);
 }
 
+/**
+ * If the scope is invalid, show a list of allowed scopes and an example.
+ */
+function scopeSuggestionText(type: string, invalidScope: string, subject: string, allowedScopes: string[]): string {
+  return [
+    `The scope '${invalidScope}' is not allowed.`,
+    `Please use one of the following allowed scopes:`,
+    allowedScopes.map(scope => `- ${scope}`).join('\n'),
+    ``,
+    `Example: ${type}(<allowed-scope>): ${subject}`
+  ].join('\n');
+}
+
 export function suggestConventionalMessage(message: string, allowedTypesInput: string[] = allowedTypes, allowedScopes: string[]): string {
   const trimmed = message.trim();
 
@@ -61,15 +74,17 @@ export function suggestConventionalMessage(message: string, allowedTypesInput: s
     const [ , type, scope ] = typeScopeNoSubject;
     if (allowedTypesInput.includes(type) && isValidScope(scope, allowedScopes)) {
       return `${type}(${scope}): `;
+    } else if (!isValidScope(scope, allowedScopes)) {
+      return scopeSuggestionText(type, scope, "", allowedScopes);
     } else {
       return `fix: `;
     }
   }
 
   // Already conventional commit?
-  const conventional = /^(\w+)(\([^)]+\))?: (.+)$/.exec(trimmed);
+  const conventional = /^(\w+)\(([^)]+)\): (.+)$/.exec(trimmed);
   if (conventional) {
-    const [ , type, , subject ] = conventional; // <-- fixed here
+    const [ , type, scope, subject ] = conventional;
     if (!allowedTypesInput.includes(type)) {
       // If type is not allowed, but is a valid scope, use it as scope
       if (isValidScope(type, allowedScopes)) {
@@ -77,6 +92,9 @@ export function suggestConventionalMessage(message: string, allowedTypesInput: s
       } else {
         return `fix: ${subject}`;
       }
+    }
+    if (!isValidScope(scope, allowedScopes)) {
+      return scopeSuggestionText(type, scope, subject, allowedScopes);
     }
     return trimmed;
   }
@@ -100,6 +118,9 @@ export function suggestConventionalMessage(message: string, allowedTypesInput: s
       if (isValidScope(candidateScope, allowedScopes)) {
         scope = candidateScope;
         rest = words.slice(2).join(" ");
+      } else if (candidateScope.length > 0) {
+        // If scope is present but not valid, show allowed scopes suggestion
+        return scopeSuggestionText(type, candidateScope, words.slice(2).join(" "), allowedScopes);
       } else {
         scope = "";
         rest = words.slice(1).join(" ");
@@ -113,6 +134,9 @@ export function suggestConventionalMessage(message: string, allowedTypesInput: s
       if (isValidScope(candidateScope, allowedScopes)) {
         scope = candidateScope;
         rest = words.slice(1).join(" ");
+      } else if (candidateScope.length > 0) {
+        // If scope is present but not valid, show allowed scopes suggestion
+        return scopeSuggestionText(type, candidateScope, words.slice(1).join(" "), allowedScopes);
       } else {
         scope = "";
         rest = trimmed;
