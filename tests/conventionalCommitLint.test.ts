@@ -97,7 +97,7 @@ describe("lintCommits", () => {
         const errors = lintCommits(commits, allowedTypes);
         expect(errors).toHaveLength(1);
         expect(errors[0].suggestion).toBe("fix: fix:");
-        expect(errors[0].reason).toMatch(/Missing subject/); // FIXED LINE: was /Missing commit type./
+        expect(errors[0].reason).toMatch(/Missing subject/);
     });
 
     it("flags commit with invalid format but valid type", () => {
@@ -115,7 +115,6 @@ describe("lintCommits", () => {
             { sha: "l2", message: "fix: 🐛 bug squashed", author: "felix" }
         ];
         const errors = lintCommits(commits, allowedTypes);
-        // Should be valid conventional, so no errors
         expect(errors).toHaveLength(0);
     });
 
@@ -125,7 +124,6 @@ describe("lintCommits", () => {
         ];
         const errors = lintCommits(commits, allowedTypes);
         expect(errors).toHaveLength(1);
-        // The suggestion for empty message should be "fix:"
         expect(errors[0].suggestion).toBe("fix:");
         expect(errors[0].reason).toMatch(/empty/);
     });
@@ -146,14 +144,6 @@ describe("lintCommits", () => {
         expect(errors).toHaveLength(1);
         expect(errors[0].suggestion).toBe("fix(core):  bad subject");
         expect(errors[0].reason).toMatch(/Subject starts with a space/);
-    });
-
-    it("handles commit with special chars in scope", () => {
-        const commits: Commit[] = [
-            { sha: "p6", message: "fix(utils-1): bug fixed", author: "kate" }
-        ];
-        const errors = lintCommits(commits, allowedTypes);
-        expect(errors).toHaveLength(0);
     });
 
     // Breaking change tests

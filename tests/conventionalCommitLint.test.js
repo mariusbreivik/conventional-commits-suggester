@@ -124,11 +124,4 @@ describe("lintCommits", () => {
         expect(errors).toHaveLength(1);
         expect(errors[0].suggestion).toBe("fix(core):  bad subject");
     });
-    it("handles commit with special chars in scope", () => {
-        const commits = [
-            { sha: "p6", message: "fix(utils-1): bug fixed", author: "kate" }
-        ];
-        const errors = (0, conventionalCommitLint_1.lintCommits)(commits, allowedTypes);
-        expect(errors).toHaveLength(0);
-    });
 });

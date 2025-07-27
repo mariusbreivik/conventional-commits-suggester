@@ -1,9 +1,9 @@
-const allowedTypes = [
+export const allowedTypes = [
   "feat", "fix", "chore", "docs", "refactor", "test", "ci", "build", "perf"
 ];
 
 // Add more project-specific scopes here if needed
-const allowedScopes: string[] = [
+export const allowedScopes: string[] = [
   "core",
   "api",
   "auth",
@@ -47,7 +47,7 @@ function isValidScope(scope: string, allowedScopes: string[] = []) {
   ) || allowedScopes.includes(normalized);
 }
 
-export function suggestConventionalMessage(message: string, allowedTypesInput: string[] = allowedTypes): string {
+export function suggestConventionalMessage(message: string, allowedTypesInput: string[] = allowedTypes, allowedScopes: string[]): string {
   const trimmed = message.trim();
 
   // Empty or whitespace-only message

@@ -1,6 +1,7 @@
 import * as core from "@actions/core";
 import * as github from "@actions/github";
 import { lintCommits, Commit } from "./conventionalCommitLint";
+import { allowedScopes as defaultAllowedScopes } from "./suggestConventionalMessage";
 
 async function run() {
   try {
@@ -9,6 +10,10 @@ async function run() {
     const allowedTypesInput = (core.getInput("allowed_types") || "feat,fix,chore,docs,refactor,test,ci,build,perf")
         .split(",")
         .map((t) => t.trim());
+    const allowedScopesInput = core.getInput("allowed-scopes");
+    const allowedScopes = allowedScopesInput
+        ? allowedScopesInput.split(",").map((s) => s.trim()).filter(Boolean)
+        : defaultAllowedScopes;
     const suggestionMode = core.getInput("suggestion_mode") || "summary";
 
     const context = github.context;
@@ -54,7 +59,8 @@ async function run() {
       filteredCommits.push(commit);
     }
 
-    const errors = lintCommits(filteredCommits, allowedTypesInput);
+    // Pass allowedScopes to lintCommits
+    const errors = lintCommits(filteredCommits, allowedTypesInput, allowedScopes);
 
     if (errors.length === 0) {
       core.info("All commit messages follow Conventional Commits! 🚀");

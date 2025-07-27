@@ -1,4 +1,4 @@
-import { suggestConventionalMessage } from "./suggestConventionalMessage";
+import { suggestConventionalMessage, allowedScopes as defaultAllowedScopes } from "./suggestConventionalMessage";
 import { sync as parseConventional } from "conventional-commits-parser";
 
 export interface Commit {
@@ -11,12 +11,13 @@ export interface LintError {
   sha: string;
   message: string;
   suggestion: string;
-  reason: string; // New field for detailed error reason
+  reason: string;
 }
 
 export function lintCommits(
     commits: Commit[],
     allowedTypesInput: string[],
+    allowedScopes: string[] = defaultAllowedScopes, // Use the full default list!
 ): LintError[] {
   const errors: LintError[] = [];
 
@@ -25,7 +26,7 @@ export function lintCommits(
       errors.push({
         sha: commit.sha,
         message: commit.message,
-        suggestion: suggestConventionalMessage(commit.message, allowedTypesInput),
+        suggestion: suggestConventionalMessage(commit.message, allowedTypesInput, allowedScopes),
         reason: "Commit message is empty.",
       });
       continue;
@@ -33,17 +34,16 @@ export function lintCommits(
 
     const parsed = parseConventional(commit.message);
 
-    // --- Robust type and breaking detection ---
     let commitType = parsed.type;
     let breakingTypeBang = false;
+    let scope = parsed.scope;
 
-    // If type is missing but header exists, try to manually parse for type and bang
     if (!commitType && parsed.header) {
-      // Match "type!:" or "type(scope)!:" or "type(scope):"
-      const headerMatch = /^([a-zA-Z0-9]+)(!?)(\([^)]+\))?:/.exec(parsed.header);
+      const headerMatch = /^([a-zA-Z0-9]+)(!?)(\(([^)]+)\))?:/.exec(parsed.header);
       if (headerMatch) {
         commitType = headerMatch[1];
         breakingTypeBang = headerMatch[2] === '!';
+        scope = headerMatch[4];
       }
     } else if (commitType && commitType.endsWith('!')) {
       breakingTypeBang = true;
@@ -54,7 +54,7 @@ export function lintCommits(
       errors.push({
         sha: commit.sha,
         message: commit.message,
-        suggestion: suggestConventionalMessage(commit.message, allowedTypesInput),
+        suggestion: suggestConventionalMessage(commit.message, allowedTypesInput, allowedScopes),
         reason: "Missing commit type.",
       });
       continue;
@@ -64,13 +64,23 @@ export function lintCommits(
       errors.push({
         sha: commit.sha,
         message: commit.message,
-        suggestion: suggestConventionalMessage(commit.message, allowedTypesInput),
+        suggestion: suggestConventionalMessage(commit.message, allowedTypesInput, allowedScopes),
         reason: `Unknown commit type: '${commitType}' (allowed: ${allowedTypesInput.join(", ")})`,
       });
       continue;
     }
 
-    // --- Breaking change detection: check for ! in type and missing BREAKING CHANGE footer ---
+    // ---- SCOPE VALIDATION ----
+    if (scope && allowedScopes.length > 0 && !allowedScopes.includes(scope)) {
+      errors.push({
+        sha: commit.sha,
+        message: commit.message,
+        suggestion: suggestConventionalMessage(commit.message, allowedTypesInput, allowedScopes),
+        reason: `Unknown scope: '${scope}' (allowed: ${allowedScopes.join(", ")})`,
+      });
+      continue;
+    }
+
     const hasBreakingChangeNote = Array.isArray(parsed.notes) && parsed.notes.some(
         note =>
             note.title &&
@@ -87,7 +97,6 @@ export function lintCommits(
       continue;
     }
 
-    // Optionally, also warn if BREAKING CHANGE footer is present but empty
     let hasEmptyBreakingNote = false;
     if (Array.isArray(parsed.notes)) {
       hasEmptyBreakingNote = parsed.notes.some(
@@ -107,8 +116,6 @@ export function lintCommits(
       continue;
     }
 
-    // Now check for missing subject ONLY IF NOT a valid breaking change commit
-    // (If this is a breaking change with ! and a valid footer, do not require a subject)
     if (
         (!parsed.subject || !parsed.subject.trim()) &&
         !(breakingTypeBang && hasBreakingChangeNote)
@@ -116,7 +123,7 @@ export function lintCommits(
       errors.push({
         sha: commit.sha,
         message: commit.message,
-        suggestion: suggestConventionalMessage(commit.message, allowedTypesInput),
+        suggestion: suggestConventionalMessage(commit.message, allowedTypesInput, allowedScopes),
         reason: "Missing subject.",
       });
       continue;
@@ -126,12 +133,10 @@ export function lintCommits(
       errors.push({
         sha: commit.sha,
         message: commit.message,
-        suggestion: suggestConventionalMessage(commit.message, allowedTypesInput),
+        suggestion: suggestConventionalMessage(commit.message, allowedTypesInput, allowedScopes),
         reason: "Subject starts with a space.",
       });
     }
-
-    // If valid, do nothing
   }
 
   return errors;
