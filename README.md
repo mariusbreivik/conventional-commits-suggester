@@ -1,14 +1,19 @@
 # 🚦 Conventional Commits Suggester
 
-[![GitHub Marketplace](https://img.shields.io/badge/Marketplace-Conventional%20Commits%20Suggester-blue?logo=github)](https://github.com/marketplace/actions/conventional-commits-suggester)
+**Automate your GitHub repository’s commit hygiene!**  
+Conventional Commits Suggester is a GitHub Action that instantly checks every commit in your PRs and pushes, giving smart, actionable suggestions for fixing non-compliant messages—no more messy commit history!
 
-A GitHub Action to enforce [Conventional Commits](https://www.conventionalcommits.org/) in your PRs and pushes, with **helpful suggestions** for fixing commit messages that don't comply!
+[![GitHub Marketplace](https://img.shields.io/badge/Marketplace-Conventional%20Commits%20Suggester-blue?logo=github)](https://github.com/marketplace/actions/conventional-commits-suggester)
+[![Stars](https://img.shields.io/github/stars/mariusbreivik/conventional-commits-suggester?style=social)](https://github.com/mariusbreivik/conventional-commits-suggester/stargazers)
 
 ---
 
-## 🎯 Goal
+## 🎯 Why Conventional Commits Suggester?
 
-Ensure all commit messages in your repository follow the Conventional Commits standard, making your history clean, automatable, and release-friendly. If a message doesn't comply, this action will suggest a compliant message.
+- **Polish your repo’s commit history:** Encourage a clean, standardized, and automatable commit log.
+- **Effortless onboarding:** New contributors get instant, helpful feedback—no docs required.
+- **Release-ready:** Semantic commit messages unlock automated changelogs and versioning.
+- **Boost project credibility:** Show potential contributors and users a professional, well-maintained codebase!
 
 ---
 
@@ -26,7 +31,7 @@ Ensure all commit messages in your repository follow the Conventional Commits st
 
 ## 🚀 Quick Start
 
-Add to your workflow:
+Add this action to your workflow in seconds:
 
 ```yaml
 - uses: mariusbreivik/conventional-commits-suggester@v1
@@ -58,10 +63,9 @@ For local testing (in this repo):
 
 ---
 
-## 💡 Examples
+## 💡 Usage Examples
 
-#### 1. Only show in summary and don’t fail build on error
-
+**Only show in summary and don’t fail build on error:**
 ```yaml
 - uses: mariusbreivik/conventional-commits-suggester@v1
   with:
@@ -70,8 +74,7 @@ For local testing (in this repo):
     fail_on_error: "false"
 ```
 
-#### 2. Show suggestions as PR comment and summary
-
+**Show suggestions as PR comment and summary:**
 ```yaml
 - uses: mariusbreivik/conventional-commits-suggester@v1
   with:
@@ -79,8 +82,7 @@ For local testing (in this repo):
     suggestion_mode: "both"
 ```
 
-#### 3. Custom allowed types
-
+**Custom allowed types:**
 ```yaml
 - uses: mariusbreivik/conventional-commits-suggester@v1
   with:
@@ -102,21 +104,9 @@ If a commit message is invalid, you'll see something like:
 
 ---
 
-## ⚠️ Error Reasons
+## ⚡ Allowed Commit Types & Scopes
 
-- **Commit message is empty.**: No message was provided.
-- **Missing commit type.**: The type (e.g., `fix`, `feat`) was not found.
-- **Unknown commit type:**: The type used is not allowed (see config).
-- **Missing subject.**: No subject after the type/scope.
-- **Subject starts with a space.**: The subject has a leading space.
-- (More reasons may be added as checks expand.)
-- **Errors are now reported with improved clarity and detail (v1.0.4+)**
-
----
-
-## ⚡ Allowed Commit Types and Scopes
-
-### Allowed Commit Types
+**Allowed Commit Types:**  
 By default, these commit types are supported:
 - `feat`
 - `fix`
@@ -128,14 +118,52 @@ By default, these commit types are supported:
 - `build`
 - `perf`
 
-You can customize allowed types using the `allowed_types` input in your workflow.
-
-### Allowed Scopes
+**Allowed Scopes:**  
 Commit scopes help specify which part of the codebase a commit affects.  
 The following scopes are recognized by default:
-- `core`, `api`, `auth`, `cli`, `ui`, `db`, `deps`, `config`, `build`, `test`, `docs`, `ci`, `server`, `client`, `router`, `utils`, `styles`, `assets`, `release`, `docker`, `lint`, `env`, `integration`, `feature`, `performance`, `security`, `improve`, `-`
+- `core`
+- `api`
+- `auth`
+- `cli`
+- `ui`
+- `db`
+- `deps`
+- `config`
+- `build`
+- `test`
+- `docs`
+- `ci`
+- `server`
+- `client`
+- `router`
+- `utils`
+- `styles`
+- `assets`
+- `release`
+- `docker`
+- `lint`
+- `env`
+- `integration`
+- `feature`
+- `performance`
+- `security`
+- `improve`
+- `-`
 
-Note: The dash (`-`) represents an empty or unspecified scope. It can be used when a commit does not pertain to a specific part of the codebase.
+Symbolic scopes such as `-` are now supported.
+
+---
+
+## ⚠️ Error Reasons
+
+- **Commit message is empty.**: No message was provided.
+- **Missing commit type.**: The type (e.g., `fix`, `feat`) was not found.
+- **Unknown commit type:**: The type used is not allowed (see config).
+- **Missing subject.**: No subject after the type/scope.
+- **Subject starts with a space.**: The subject has a leading space.
+- (More reasons may be added as checks expand.)
+- **Errors are now reported with improved clarity and detail (v1.0.4+)**
+
 ---
 
 ## ⚠️ Notes
@@ -149,8 +177,9 @@ Note: The dash (`-`) represents an empty or unspecified scope. It can be used wh
 
 ## 🙌 Contributing
 
-PRs welcome! Check the [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
+PRs are always welcome! Check the [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
 
 ---
 
-Give your commits superpowers — keep them Conventional and let the bot help you fix them! 🚀
+Give your commits superpowers — keep them Conventional and let this action help you fix them! 🚀  
+**If you love this project, please star it and share with your friends and colleagues!**
