@@ -1,7 +1,7 @@
 # 🚦 Conventional Commits Suggester
 
 **Automate your GitHub repository’s commit hygiene!**  
-Conventional Commits Suggester is a GitHub Action that instantly checks every commit in your PRs and pushes, giving smart, actionable suggestions for fixing non-compliant messages—no more messy commit history!
+Conventional Commits Suggester is a GitHub Action that instantly checks every commit in your PRs and pushes, giving smart, actionable suggestions for fixing non-compliant messages—no more messy commit logs.
 
 [![GitHub Marketplace](https://img.shields.io/badge/Marketplace-Conventional%20Commits%20Suggester-blue?logo=github)](https://github.com/marketplace/actions/conventional-commits-suggester)
 [![Stars](https://img.shields.io/github/stars/mariusbreivik/conventional-commits-suggester?style=social)](https://github.com/mariusbreivik/conventional-commits-suggester/stargazers)
@@ -26,6 +26,7 @@ Conventional Commits Suggester is a GitHub Action that instantly checks every co
 - 🔒 Easy setup, works with all GitHub-hosted runners
 - 📦 Published on [GitHub Marketplace](https://github.com/marketplace/actions/conventional-commits-suggester)
 - 🛡️ Improved error handling for commit message validation (v1.0.4+)
+- 🧩 **Custom scopes support:** You can now provide your own list of allowed commit scopes to override the pre-defined defaults.
 
 ---
 
@@ -40,6 +41,7 @@ Add this action to your workflow in seconds:
     suggestion_mode: "summary"    # "summary", "comment", or "both"
     fail_on_error: "true"         # set "false" to just warn and not fail
     allowed_types: "feat,fix,chore,docs,refactor,test,ci,build,perf"
+    allowed_scopes: "core,ui,api,customscope" # <--- Add this line to override default scopes
 ```
 
 For local testing (in this repo):
@@ -60,6 +62,7 @@ For local testing (in this repo):
 | `suggestion_mode`| No       | `summary`                                               | Where suggestions show: `"summary"`, `"comment"`, or `"both"` |
 | `fail_on_error`  | No       | `true`                                                  | `"true"` to fail on bad commits, `"false"` to only warn    |
 | `allowed_types`  | No       | `feat,fix,chore,docs,refactor,test,ci,build,perf`       | Comma-separated list of allowed commit types               |
+| `allowed_scopes` | No       | (see below)                                             | **Comma-separated list of allowed commit scopes. If set, this will override the default scope list below.** |
 
 ---
 
@@ -90,6 +93,14 @@ For local testing (in this repo):
     allowed_types: "feat,fix,style,security"
 ```
 
+**Custom allowed scopes:**
+```yaml
+- uses: mariusbreivik/conventional-commits-suggester@v1
+  with:
+    github_token: ${{ secrets.GITHUB_TOKEN }}
+    allowed_scopes: "core,ui,api,customscope,another-scope"
+```
+
 ---
 
 ## 📦 Example Output
@@ -101,6 +112,8 @@ If a commit message is invalid, you'll see something like:
   - Reason: Unknown commit type 'bad'
   - Suggestion: `fix: bad commit message`
 ```
+
+With a custom scope list, unknown scopes are validated against your input.
 
 ---
 
@@ -119,8 +132,8 @@ By default, these commit types are supported:
 - `perf`
 
 **Allowed Scopes:**  
-Commit scopes help specify which part of the codebase a commit affects.  
-The following scopes are recognized by default:
+You may provide a custom scope list with the `allowed_scopes` input.  
+If not set, the following scopes are recognized by default:
 - `core`
 - `api`
 - `auth`
@@ -152,6 +165,14 @@ The following scopes are recognized by default:
 
 Symbolic scopes such as `-` are now supported.
 
+> **Note:**  
+> If a commit uses an unknown scope (e.g. `fix(utils-1): ...`), the action will report
+> ```
+> Reason: Unknown scope: 'utils-1' (allowed: core, api, ...)
+> ```
+> and provide a suggestion.  
+> If you use `allowed_scopes` to specify your own list, only those will be accepted.
+
 ---
 
 ## ⚠️ Error Reasons
@@ -159,6 +180,7 @@ Symbolic scopes such as `-` are now supported.
 - **Commit message is empty.**: No message was provided.
 - **Missing commit type.**: The type (e.g., `fix`, `feat`) was not found.
 - **Unknown commit type:**: The type used is not allowed (see config).
+- **Unknown scope:**: The scope used is not allowed (see above).
 - **Missing subject.**: No subject after the type/scope.
 - **Subject starts with a space.**: The subject has a leading space.
 - (More reasons may be added as checks expand.)
@@ -172,6 +194,18 @@ Symbolic scopes such as `-` are now supported.
 - Action works on both `push` and `pull_request` workflows.
 - For best results, squash and merge PRs with proper commit messages.
 - Recent improvements have made error reporting more robust and user-friendly.
+
+---
+
+## 🧪 Testing
+
+The repository contains comprehensive unit tests for commit message linting and suggestion logic.
+- Tests cover edge cases such as empty messages, unknown types/scopes, single-word commits, breaking changes, and more.
+- To run tests locally:
+  ```
+  npm install
+  npm test
+  ```
 
 ---
 

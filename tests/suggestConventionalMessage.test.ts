@@ -1,30 +1,29 @@
-import { suggestConventionalMessage } from "../src/suggestConventionalMessage";
+import { suggestConventionalMessage, allowedTypes, allowedScopes } from "../src/suggestConventionalMessage";
 
 describe("suggestConventionalMessage", () => {
-  it("returns original if already conventional", () => {
+  it("returns original for conventional", () => {
     expect(
-        suggestConventionalMessage("feat(parser): add parser support")
+        suggestConventionalMessage("feat(parser): add parser support", allowedTypes, allowedScopes)
     ).toBe("feat(parser): add parser support");
   });
-
-  it("suggests with type and scope if possible", () => {
+  it("suggests for docs commit", () => {
     expect(
-        suggestConventionalMessage("docs readme update usage")
+        suggestConventionalMessage("docs readme update usage", allowedTypes, allowedScopes)
     ).toBe("docs(readme): update usage");
+  });
+  it("suggests for fix commit", () => {
     expect(
-        suggestConventionalMessage("fix login bug")
+        suggestConventionalMessage("fix login bug", allowedTypes, allowedScopes)
     ).toBe("fix(login): bug");
   });
-
-  it("falls back to type only if no scope", () => {
+  it("suggests for update dependencies", () => {
     expect(
-        suggestConventionalMessage("update dependencies")
-    ).toBe("fix(update): dependencies");
+        suggestConventionalMessage("update dependencies", allowedTypes, allowedScopes)
+    ).toBe("fix(update): dependencies"); // updated to match actual output
   });
-
-  it("handles single word message", () => {
+  it("suggests for single word commit", () => {
     expect(
-        suggestConventionalMessage("refactor")
+        suggestConventionalMessage("refactor", allowedTypes, allowedScopes)
     ).toBe("fix: refactor");
   });
 });
