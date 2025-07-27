@@ -30324,29 +30324,28 @@ Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.lintCommits = lintCommits;
 const suggestConventionalMessage_1 = __nccwpck_require__(5152);
 const conventional_commits_parser_1 = __nccwpck_require__(4375);
-function lintCommits(commits, allowedTypesInput) {
+function lintCommits(commits, allowedTypesInput, allowedScopes = suggestConventionalMessage_1.allowedScopes) {
     const errors = [];
     for (const commit of commits) {
         if (!commit.message || !commit.message.trim()) {
             errors.push({
                 sha: commit.sha,
                 message: commit.message,
-                suggestion: (0, suggestConventionalMessage_1.suggestConventionalMessage)(commit.message, allowedTypesInput),
+                suggestion: (0, suggestConventionalMessage_1.suggestConventionalMessage)(commit.message, allowedTypesInput, allowedScopes),
                 reason: "Commit message is empty.",
             });
             continue;
         }
         const parsed = (0, conventional_commits_parser_1.sync)(commit.message);
-        // --- Robust type and breaking detection ---
         let commitType = parsed.type;
         let breakingTypeBang = false;
-        // If type is missing but header exists, try to manually parse for type and bang
+        let scope = parsed.scope;
         if (!commitType && parsed.header) {
-            // Match "type!:" or "type(scope)!:" or "type(scope):"
-            const headerMatch = /^([a-zA-Z0-9]+)(!?)(\([^)]+\))?:/.exec(parsed.header);
+            const headerMatch = /^([a-zA-Z0-9]+)(!?)(\(([^)]+)\))?:/.exec(parsed.header);
             if (headerMatch) {
                 commitType = headerMatch[1];
                 breakingTypeBang = headerMatch[2] === '!';
+                scope = headerMatch[4];
             }
         }
         else if (commitType && commitType.endsWith('!')) {
@@ -30357,7 +30356,7 @@ function lintCommits(commits, allowedTypesInput) {
             errors.push({
                 sha: commit.sha,
                 message: commit.message,
-                suggestion: (0, suggestConventionalMessage_1.suggestConventionalMessage)(commit.message, allowedTypesInput),
+                suggestion: (0, suggestConventionalMessage_1.suggestConventionalMessage)(commit.message, allowedTypesInput, allowedScopes),
                 reason: "Missing commit type.",
             });
             continue;
@@ -30366,12 +30365,21 @@ function lintCommits(commits, allowedTypesInput) {
             errors.push({
                 sha: commit.sha,
                 message: commit.message,
-                suggestion: (0, suggestConventionalMessage_1.suggestConventionalMessage)(commit.message, allowedTypesInput),
+                suggestion: (0, suggestConventionalMessage_1.suggestConventionalMessage)(commit.message, allowedTypesInput, allowedScopes),
                 reason: `Unknown commit type: '${commitType}' (allowed: ${allowedTypesInput.join(", ")})`,
             });
             continue;
         }
-        // --- Breaking change detection: check for ! in type and missing BREAKING CHANGE footer ---
+        // ---- SCOPE VALIDATION ----
+        if (scope && allowedScopes.length > 0 && !allowedScopes.includes(scope)) {
+            errors.push({
+                sha: commit.sha,
+                message: commit.message,
+                suggestion: (0, suggestConventionalMessage_1.suggestConventionalMessage)(commit.message, allowedTypesInput, allowedScopes),
+                reason: `Unknown scope: '${scope}' (allowed: ${allowedScopes.join(", ")})`,
+            });
+            continue;
+        }
         const hasBreakingChangeNote = Array.isArray(parsed.notes) && parsed.notes.some(note => note.title &&
             /^BREAKING[\s-]CHANGE$/i.test(note.title.trim()));
         if (breakingTypeBang && !hasBreakingChangeNote) {
@@ -30383,7 +30391,6 @@ function lintCommits(commits, allowedTypesInput) {
             });
             continue;
         }
-        // Optionally, also warn if BREAKING CHANGE footer is present but empty
         let hasEmptyBreakingNote = false;
         if (Array.isArray(parsed.notes)) {
             hasEmptyBreakingNote = parsed.notes.some(note => note.title &&
@@ -30399,14 +30406,12 @@ function lintCommits(commits, allowedTypesInput) {
             });
             continue;
         }
-        // Now check for missing subject ONLY IF NOT a valid breaking change commit
-        // (If this is a breaking change with ! and a valid footer, do not require a subject)
         if ((!parsed.subject || !parsed.subject.trim()) &&
             !(breakingTypeBang && hasBreakingChangeNote)) {
             errors.push({
                 sha: commit.sha,
                 message: commit.message,
-                suggestion: (0, suggestConventionalMessage_1.suggestConventionalMessage)(commit.message, allowedTypesInput),
+                suggestion: (0, suggestConventionalMessage_1.suggestConventionalMessage)(commit.message, allowedTypesInput, allowedScopes),
                 reason: "Missing subject.",
             });
             continue;
@@ -30415,11 +30420,10 @@ function lintCommits(commits, allowedTypesInput) {
             errors.push({
                 sha: commit.sha,
                 message: commit.message,
-                suggestion: (0, suggestConventionalMessage_1.suggestConventionalMessage)(commit.message, allowedTypesInput),
+                suggestion: (0, suggestConventionalMessage_1.suggestConventionalMessage)(commit.message, allowedTypesInput, allowedScopes),
                 reason: "Subject starts with a space.",
             });
         }
-        // If valid, do nothing
     }
     return errors;
 }
@@ -30468,6 +30472,7 @@ Object.defineProperty(exports, "__esModule", ({ value: true }));
 const core = __importStar(__nccwpck_require__(7484));
 const github = __importStar(__nccwpck_require__(3228));
 const conventionalCommitLint_1 = __nccwpck_require__(7437);
+const suggestConventionalMessage_1 = __nccwpck_require__(5152);
 async function run() {
     try {
         const token = core.getInput("github_token", { required: true });
@@ -30475,6 +30480,10 @@ async function run() {
         const allowedTypesInput = (core.getInput("allowed_types") || "feat,fix,chore,docs,refactor,test,ci,build,perf")
             .split(",")
             .map((t) => t.trim());
+        const allowedScopesInput = core.getInput("allowed-scopes");
+        const allowedScopes = allowedScopesInput
+            ? allowedScopesInput.split(",").map((s) => s.trim()).filter(Boolean)
+            : suggestConventionalMessage_1.allowedScopes;
         const suggestionMode = core.getInput("suggestion_mode") || "summary";
         const context = github.context;
         const octokit = github.getOctokit(token);
@@ -30517,7 +30526,8 @@ async function run() {
             }
             filteredCommits.push(commit);
         }
-        const errors = (0, conventionalCommitLint_1.lintCommits)(filteredCommits, allowedTypesInput);
+        // Pass allowedScopes to lintCommits
+        const errors = (0, conventionalCommitLint_1.lintCommits)(filteredCommits, allowedTypesInput, allowedScopes);
         if (errors.length === 0) {
             core.info("All commit messages follow Conventional Commits! 🚀");
             return;
@@ -30558,12 +30568,13 @@ run();
 
 
 Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.allowedScopes = exports.allowedTypes = void 0;
 exports.suggestConventionalMessage = suggestConventionalMessage;
-const allowedTypes = [
+exports.allowedTypes = [
     "feat", "fix", "chore", "docs", "refactor", "test", "ci", "build", "perf"
 ];
 // Add more project-specific scopes here if needed
-const allowedScopes = [
+exports.allowedScopes = [
     "core",
     "api",
     "auth",
@@ -30602,7 +30613,19 @@ function isValidScope(scope, allowedScopes = []) {
         (/^[a-zA-Z0-9-_]+$/.test(normalized) || normalized === '-' || normalized === '_') &&
         (normalized.length > 2 || normalized === '-' || normalized === '_')) || allowedScopes.includes(normalized);
 }
-function suggestConventionalMessage(message, allowedTypesInput = allowedTypes) {
+/**
+ * If the scope is invalid, show a list of allowed scopes and an example.
+ */
+function scopeSuggestionText(type, invalidScope, subject, allowedScopes) {
+    return [
+        `The scope '${invalidScope}' is not allowed.`,
+        `Please use one of the following allowed scopes:`,
+        allowedScopes.map(scope => `- ${scope}`).join('\n'),
+        ``,
+        `Example: ${type}(<allowed-scope>): ${subject}`
+    ].join('\n');
+}
+function suggestConventionalMessage(message, allowedTypesInput = exports.allowedTypes, allowedScopes) {
     const trimmed = message.trim();
     // Empty or whitespace-only message
     if (!trimmed) {
@@ -30615,14 +30638,17 @@ function suggestConventionalMessage(message, allowedTypesInput = allowedTypes) {
         if (allowedTypesInput.includes(type) && isValidScope(scope, allowedScopes)) {
             return `${type}(${scope}): `;
         }
+        else if (!isValidScope(scope, allowedScopes)) {
+            return scopeSuggestionText(type, scope, "", allowedScopes);
+        }
         else {
             return `fix: `;
         }
     }
     // Already conventional commit?
-    const conventional = /^(\w+)(\([^)]+\))?: (.+)$/.exec(trimmed);
+    const conventional = /^(\w+)\(([^)]+)\): (.+)$/.exec(trimmed);
     if (conventional) {
-        const [, type, , subject] = conventional; // <-- fixed here
+        const [, type, scope, subject] = conventional;
         if (!allowedTypesInput.includes(type)) {
             // If type is not allowed, but is a valid scope, use it as scope
             if (isValidScope(type, allowedScopes)) {
@@ -30631,6 +30657,9 @@ function suggestConventionalMessage(message, allowedTypesInput = allowedTypes) {
             else {
                 return `fix: ${subject}`;
             }
+        }
+        if (!isValidScope(scope, allowedScopes)) {
+            return scopeSuggestionText(type, scope, subject, allowedScopes);
         }
         return trimmed;
     }
@@ -30651,6 +30680,10 @@ function suggestConventionalMessage(message, allowedTypesInput = allowedTypes) {
                 scope = candidateScope;
                 rest = words.slice(2).join(" ");
             }
+            else if (candidateScope.length > 0) {
+                // If scope is present but not valid, show allowed scopes suggestion
+                return scopeSuggestionText(type, candidateScope, words.slice(2).join(" "), allowedScopes);
+            }
             else {
                 scope = "";
                 rest = words.slice(1).join(" ");
@@ -30666,6 +30699,10 @@ function suggestConventionalMessage(message, allowedTypesInput = allowedTypes) {
             if (isValidScope(candidateScope, allowedScopes)) {
                 scope = candidateScope;
                 rest = words.slice(1).join(" ");
+            }
+            else if (candidateScope.length > 0) {
+                // If scope is present but not valid, show allowed scopes suggestion
+                return scopeSuggestionText(type, candidateScope, words.slice(1).join(" "), allowedScopes);
             }
             else {
                 scope = "";

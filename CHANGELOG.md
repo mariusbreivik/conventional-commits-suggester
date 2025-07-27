@@ -1,3 +1,18 @@
+# [1.1.0](https://github.com/mariusbreivik/conventional-commits-suggester/compare/v1.0.10...v1.1.0) (2025-07-27)
+
+
+### Bug Fixes
+
+* **docs:** updated readme ([d9ac119](https://github.com/mariusbreivik/conventional-commits-suggester/commit/d9ac11915a7c3155735948c8d3e1a7adbbc3c0ee))
+* **docs:** updated readme to reflect latest changes ([8cd04ca](https://github.com/mariusbreivik/conventional-commits-suggester/commit/8cd04caf058cb3701a30d9b21e342225273d1f81))
+* explain the dash ([18d2fed](https://github.com/mariusbreivik/conventional-commits-suggester/commit/18d2fed6300216b52959ffe07cfa0bbf4953c25f))
+
+
+### Features
+
+* **-:** add support for custom scopes ([c131961](https://github.com/mariusbreivik/conventional-commits-suggester/commit/c131961628f3dc1f265c0e5589e72dce5c3fb738))
+* **-:** show allowed scopes list when scope is invalid ([42e6cc9](https://github.com/mariusbreivik/conventional-commits-suggester/commit/42e6cc95d7f1b50be59f8962e39e339257bd2220))
+
 ## [1.0.10](https://github.com/mariusbreivik/conventional-commits-suggester/compare/v1.0.9...v1.0.10) (2025-07-26)
 
 
