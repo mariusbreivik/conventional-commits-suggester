@@ -11,6 +11,7 @@ export const allowedScopes: string[] = [
   "ui",
   "db",
   "deps",
+  "deps-dev",
   "config",
   "build",
   "test",
