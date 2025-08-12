@@ -1,3 +1,11 @@
+## [1.1.1](https://github.com/mariusbreivik/conventional-commits-suggester/compare/v1.1.0...v1.1.1) (2025-08-12)
+
+
+### Bug Fixes
+
+* **config:** adds deps-dev as allowed scope ([ee7be14](https://github.com/mariusbreivik/conventional-commits-suggester/commit/ee7be1487d80b89bb3e2f97f3ca9d8eace79e657))
+* **deps-dev:** update ([18b57dc](https://github.com/mariusbreivik/conventional-commits-suggester/commit/18b57dcd53b6232aedb11d9258c60739caa386ff))
+
 # [1.1.0](https://github.com/mariusbreivik/conventional-commits-suggester/compare/v1.0.10...v1.1.0) (2025-07-27)
 
 
