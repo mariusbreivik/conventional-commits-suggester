@@ -22,11 +22,9 @@ Conventional Commits Suggester is a GitHub Action that instantly checks every co
 - ✅ Checks all commit messages in PRs or pushes (skips merge commits automatically)
 - 💡 Suggests the correct Conventional Commit format for each invalid message
 - 💬 Posts suggestions as PR comments and/or workflow summary
-- ⚙️ Configurable commit types, fail/warn modes, and output options
+- ⚙️ Configurable commit types, custom scopes, fail/warn modes, and output options
 - 🔒 Easy setup, works with all GitHub-hosted runners
 - 📦 Published on [GitHub Marketplace](https://github.com/marketplace/actions/conventional-commits-suggester)
-- 🛡️ Improved error handling for commit message validation (v1.0.4+)
-- 🧩 **Custom scopes support:** You can now provide your own list of allowed commit scopes to override the pre-defined defaults.
 
 ---
 
@@ -40,29 +38,19 @@ Add this action to your workflow in seconds:
     github_token: ${{ secrets.GITHUB_TOKEN }}
     suggestion_mode: "summary"    # "summary", "comment", or "both"
     fail_on_error: "true"         # set "false" to just warn and not fail
-    allowed_types: "feat,fix,chore,docs,refactor,test,ci,build,perf"
-    allowed_scopes: "core,ui,api,customscope" # <--- Add this line to override default scopes
-```
-
-For local testing (in this repo):
-
-```yaml
-- uses: ./
-  with:
-    github_token: ${{ secrets.GITHUB_TOKEN }}
 ```
 
 ---
 
-## 🛠️ Inputs
+## 🛠️ Workflow Inputs
 
-| Name             | Required | Default                                                 | Description                                                |
-|------------------|----------|---------------------------------------------------------|------------------------------------------------------------|
-| `github_token`   | Yes      | —                                                       | GitHub token for API access. Usually `${{ secrets.GITHUB_TOKEN }}` |
-| `suggestion_mode`| No       | `summary`                                               | Where suggestions show: `"summary"`, `"comment"`, or `"both"` |
-| `fail_on_error`  | No       | `true`                                                  | `"true"` to fail on bad commits, `"false"` to only warn    |
-| `allowed_types`  | No       | `feat,fix,chore,docs,refactor,test,ci,build,perf`       | Comma-separated list of allowed commit types               |
-| `allowed_scopes` | No       | (see below)                                             | **Comma-separated list of allowed commit scopes. If set, this will override the default scope list below.** |
+| Name             | Required | Default                                                                                                                                                                                                 | Description                                                                                       |
+|------------------|----------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|---------------------------------------------------------------------------------------------------|
+| `github_token`   | Yes      | —                                                                                                                                                                                                       | GitHub token for API access. Usually `${{ secrets.GITHUB_TOKEN }}`                                |
+| `suggestion_mode`| No       | `summary`                                                                                                                                                                                               | Where suggestions show: `"summary"`, `"comment"`, or `"both"`                                     |
+| `fail_on_error`  | No       | `true`                                                                                                                                                                                                  | `"true"` to fail on bad commits, `"false"` to only warn                                           |
+| `allowed_types`  | No       | `feat, fix, chore, docs, refactor, test, ci, build, perf`                                                                                                                                               | Comma-separated list of allowed commit types                                                      |
+| `allowed_scopes` | No       | `core, api, auth, cli, ui, db, deps, config, build, test, docs, ci, server, client, router, utils, styles, assets, release, docker, lint, env, integration, feature, performance, security, improve, -` | Comma-separated list of allowed commit scopes. If set, this will override the default scope list  |
 
 ---
 
@@ -113,66 +101,6 @@ If a commit message is invalid, you'll see something like:
   - Suggestion: `fix: bad commit message`
 ```
 
-With a custom scope list, unknown scopes are validated against your input.
-
----
-
-## ⚡ Allowed Commit Types & Scopes
-
-**Allowed Commit Types:**  
-By default, these commit types are supported:
-- `feat`
-- `fix`
-- `chore`
-- `docs`
-- `refactor`
-- `test`
-- `ci`
-- `build`
-- `perf`
-
-**Allowed Scopes:**  
-You may provide a custom scope list with the `allowed_scopes` input.  
-If not set, the following scopes are recognized by default:
-- `core`
-- `api`
-- `auth`
-- `cli`
-- `ui`
-- `db`
-- `deps`
-- `config`
-- `build`
-- `test`
-- `docs`
-- `ci`
-- `server`
-- `client`
-- `router`
-- `utils`
-- `styles`
-- `assets`
-- `release`
-- `docker`
-- `lint`
-- `env`
-- `integration`
-- `feature`
-- `performance`
-- `security`
-- `improve`
-- `-`
-
-Symbolic scopes such as `-` are now supported.
-
-> **Note:**  
-> If a commit uses an unknown scope (e.g. `fix(utils-1): ...`), the action will report
-> ```
-> Reason: Unknown scope: 'utils-1' (allowed: core, api, ...)
-> ```
-> and provide a suggestion.  
-> If you use `allowed_scopes` to specify your own list, only those will be accepted.
-
 ---
 
 ## ⚠️ Error Reasons
@@ -180,10 +108,9 @@ Symbolic scopes such as `-` are now supported.
 - **Commit message is empty.**: No message was provided.
 - **Missing commit type.**: The type (e.g., `fix`, `feat`) was not found.
 - **Unknown commit type:**: The type used is not allowed (see config).
-- **Unknown scope:**: The scope used is not allowed (see above).
+- **Unknown scope:**: The scope used is not allowed (see config).
 - **Missing subject.**: No subject after the type/scope.
 - **Subject starts with a space.**: The subject has a leading space.
-- (More reasons may be added as checks expand.)
 - **Errors are now reported with improved clarity and detail (v1.0.4+)**
 
 ---
@@ -193,19 +120,6 @@ Symbolic scopes such as `-` are now supported.
 - **Merge commits are automatically skipped** (not checked for Conventional Commit compliance).
 - Action works on both `push` and `pull_request` workflows.
 - For best results, squash and merge PRs with proper commit messages.
-- Recent improvements have made error reporting more robust and user-friendly.
-
----
-
-## 🧪 Testing
-
-The repository contains comprehensive unit tests for commit message linting and suggestion logic.
-- Tests cover edge cases such as empty messages, unknown types/scopes, single-word commits, breaking changes, and more.
-- To run tests locally:
-  ```
-  npm install
-  npm test
-  ```
 
 ---
 
