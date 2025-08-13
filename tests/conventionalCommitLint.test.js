@@ -16,19 +16,25 @@ describe("lintCommits", () => {
     it("returns errors and suggestions for non-conventional commits", () => {
         const commits = [
             { sha: "c3", message: "updated dependencies", author: "eve" },
-            { sha: "d4", message: "fix login bug", author: "mallory" }
+            { sha: "d4", message: "fix login bug", author: "mallory" },
+            { sha: "e5", message: "bad commit message", author: "mallory" }
         ];
         const errors = (0, conventionalCommitLint_1.lintCommits)(commits, allowedTypes);
-        expect(errors).toHaveLength(2);
+        expect(errors).toHaveLength(3);
         expect(errors[0]).toMatchObject({
             sha: "c3",
             message: "updated dependencies",
-            suggestion: "fix(updated): dependencies"
+            suggestion: "fix: updated dependencies"
         });
         expect(errors[1]).toMatchObject({
             sha: "d4",
             message: "fix login bug",
-            suggestion: "fix(login): bug"
+            suggestion: "fix: login bug"
+        });
+        expect(errors[2]).toMatchObject({
+            sha: "e5",
+            message: "bad commit message",
+            suggestion: "fix: bad commit message"
         });
     });
     it("handles empty commit list", () => {
@@ -49,7 +55,7 @@ describe("lintCommits", () => {
         ];
         const errors = (0, conventionalCommitLint_1.lintCommits)(commits, allowedTypes);
         expect(errors).toHaveLength(1);
-        expect(errors[0].suggestion).toBe("fix(improve): performance");
+        expect(errors[0].suggestion).toBe("fix: performance");
     });
     it("accepts allowedTypes override", () => {
         const commits = [
@@ -74,7 +80,7 @@ describe("lintCommits", () => {
         ];
         const errors = (0, conventionalCommitLint_1.lintCommits)(commits, allowedTypes);
         expect(errors).toHaveLength(1);
-        expect(errors[0].suggestion).toBe("fix(login): bug");
+        expect(errors[0].suggestion).toBe("fix: login bug");
     });
     it("flags commit with only type", () => {
         const commits = [

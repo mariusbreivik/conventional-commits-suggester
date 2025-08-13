@@ -17,20 +17,27 @@ describe("lintCommits", () => {
     it("returns errors and suggestions for non-conventional commits", () => {
         const commits: Commit[] = [
             { sha: "c3", message: "updated dependencies", author: "eve" },
-            { sha: "d4", message: "fix login bug", author: "mallory" }
+            { sha: "d4", message: "fix login bug", author: "mallory" },
+            { sha: "e5", message: "bad commit message", author: "mallory" }
         ];
         const errors = lintCommits(commits, allowedTypes);
-        expect(errors).toHaveLength(2);
+        expect(errors).toHaveLength(3);
         expect(errors[0]).toMatchObject({
             sha: "c3",
             message: "updated dependencies",
-            suggestion: "fix(updated): dependencies",
+            suggestion: "fix: updated dependencies",
             reason: "Missing commit type.",
         });
         expect(errors[1]).toMatchObject({
             sha: "d4",
             message: "fix login bug",
-            suggestion: "fix(login): bug",
+            suggestion: "fix: login bug",
+            reason: "Missing commit type.",
+        });
+        expect(errors[2]).toMatchObject({
+            sha: "e5",
+            message: "bad commit message",
+            suggestion: "fix: bad commit message",
             reason: "Missing commit type.",
         });
     });
@@ -56,7 +63,7 @@ describe("lintCommits", () => {
         ];
         const errors = lintCommits(commits, allowedTypes);
         expect(errors).toHaveLength(1);
-        expect(errors[0].suggestion).toBe("fix(improve): performance");
+        expect(errors[0].suggestion).toBe("fix: performance");
         expect(errors[0].reason).toMatch(/Unknown commit type: 'improve'/);
     });
 
@@ -86,7 +93,7 @@ describe("lintCommits", () => {
         ];
         const errors = lintCommits(commits, allowedTypes);
         expect(errors).toHaveLength(1);
-        expect(errors[0].suggestion).toBe("fix(login): bug");
+        expect(errors[0].suggestion).toBe("fix: login bug");
         expect(errors[0].reason).toMatch(/Missing commit type/);
     });
 
