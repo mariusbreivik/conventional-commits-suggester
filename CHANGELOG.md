@@ -1,3 +1,10 @@
+## [1.1.2](https://github.com/mariusbreivik/conventional-commits-suggester/compare/v1.1.1...v1.1.2) (2025-08-13)
+
+
+### Bug Fixes
+
+* **docs:** improve readme ([8c508bc](https://github.com/mariusbreivik/conventional-commits-suggester/commit/8c508bc91dd7fc0cc4d3869bd23ba73965586126))
+
 ## [1.1.1](https://github.com/mariusbreivik/conventional-commits-suggester/compare/v1.1.0...v1.1.1) (2025-08-12)
 
 
