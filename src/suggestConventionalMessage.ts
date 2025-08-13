@@ -48,9 +48,6 @@ function isValidScope(scope: string, allowedScopes: string[] = []) {
   ) || allowedScopes.includes(normalized);
 }
 
-/**
- * If the scope is invalid, show a list of allowed scopes and an example.
- */
 function scopeSuggestionText(type: string, invalidScope: string, subject: string, allowedScopes: string[]): string {
   return [
     `The scope '${invalidScope}' is not allowed.`,
@@ -61,7 +58,8 @@ function scopeSuggestionText(type: string, invalidScope: string, subject: string
   ].join('\n');
 }
 
-export function suggestConventionalMessage(message: string, allowedTypesInput: string[] = allowedTypes, allowedScopes: string[]): string {
+
+export function suggestConventionalMessage(message: string, allowedTypesInput: string[] = allowedTypes, allowedScopes: string[] = []): string {
   const trimmed = message.trim();
 
   // Empty or whitespace-only message
@@ -70,34 +68,42 @@ export function suggestConventionalMessage(message: string, allowedTypesInput: s
   }
 
   // Case: type(scope): with no subject
-  const typeScopeNoSubject = /^(\w+)\(([^)]+)\):\s*$/.exec(trimmed);
+  const typeScopeNoSubject = /^([a-zA-Z0-9]+)\(([^)]+)\):\s*$/.exec(trimmed);
   if (typeScopeNoSubject) {
     const [ , type, scope ] = typeScopeNoSubject;
-    if (allowedTypesInput.includes(type) && isValidScope(scope, allowedScopes)) {
+    if (allowedTypesInput.includes(type) && allowedScopes.includes(scope)) {
       return `${type}(${scope}): `;
-    } else if (!isValidScope(scope, allowedScopes)) {
-      return scopeSuggestionText(type, scope, "", allowedScopes);
+    } else if (scope && !allowedScopes.includes(scope)) {
+      return scopeSuggestionText(type, scope, '', allowedScopes);
     } else {
       return `fix: `;
     }
   }
 
   // Already conventional commit?
-  const conventional = /^(\w+)\(([^)]+)\): (.+)$/.exec(trimmed);
+  const conventional = /^([a-zA-Z0-9]+)\(([^)]+)\): (.+)$/.exec(trimmed);
   if (conventional) {
     const [ , type, scope, subject ] = conventional;
     if (!allowedTypesInput.includes(type)) {
-      // If type is not allowed, but is a valid scope, use it as scope
-      if (isValidScope(type, allowedScopes)) {
-        return `fix(${type}): ${subject}`;
-      } else {
-        return `fix: ${subject}`;
-      }
+      return `fix: ${subject}`;
     }
-    if (!isValidScope(scope, allowedScopes)) {
+    if (!allowedScopes.includes(scope)) {
       return scopeSuggestionText(type, scope, subject, allowedScopes);
     }
     return trimmed;
+  }
+
+  // If message starts with a valid type and colon, do not prepend fix:
+  const typeColon = /^([a-zA-Z0-9]+):\s*/.exec(trimmed);
+  if (typeColon && allowedTypesInput.includes(typeColon[1])) {
+    return trimmed;
+  }
+
+  // If message starts with a valid type! or type!(scope):, treat as breaking change and strip type for suggestion
+  const breakingType = /^([a-zA-Z0-9]+)!\(([^)]+)\):\s*(.*)/.exec(trimmed);
+  if (breakingType) {
+    // breakingType[3] is the subject
+    return `fix: ${breakingType[3]}`;
   }
 
   // If single word, return 'fix: <word>'
@@ -107,47 +113,37 @@ export function suggestConventionalMessage(message: string, allowedTypesInput: s
 
   // Try to extract type and scope from message
   const words = trimmed.split(/\s+/);
-
   let type = "fix";
   let scope = "";
   let rest = trimmed;
 
+  // If first word is a valid type, use it
   if (allowedTypesInput.includes(words[0].toLowerCase())) {
     type = words[0].toLowerCase();
-    if (words.length > 2) {
-      const candidateScope = words[1].replace(/[^a-zA-Z0-9-_]/g, "").toLowerCase();
-      if (isValidScope(candidateScope, allowedScopes)) {
-        scope = candidateScope;
-        rest = words.slice(2).join(" ");
-      } else if (candidateScope.length > 0) {
-        // If scope is present but not valid, show allowed scopes suggestion
-        return scopeSuggestionText(type, candidateScope, words.slice(2).join(" "), allowedScopes);
-      } else {
-        scope = "";
-        rest = words.slice(1).join(" ");
-      }
+    rest = words.slice(1).join(" ");
+  }
+
+  // Look for a valid scope in allowedScopes (not type)
+  const candidateScope = words.find(
+    (word, idx) => idx !== 0 && isValidScope(word, allowedScopes)
+  );
+  if (candidateScope) {
+    const normalizedScope = candidateScope.replace(/[^a-zA-Z0-9-_]/g, "").toLowerCase();
+    if (allowedScopes.includes(normalizedScope)) {
+      scope = normalizedScope;
+      rest = words.filter(w => w !== candidateScope).join(" ");
     } else {
-      rest = words.slice(1).join(" ");
-    }
-  } else {
-    if (words.length > 1) {
-      const candidateScope = words[0].replace(/[^a-zA-Z0-9-_]/g, "").toLowerCase();
-      if (isValidScope(candidateScope, allowedScopes)) {
-        scope = candidateScope;
-        rest = words.slice(1).join(" ");
-      } else if (candidateScope.length > 0) {
-        // If scope is present but not valid, show allowed scopes suggestion
-        return scopeSuggestionText(type, candidateScope, words.slice(1).join(" "), allowedScopes);
-      } else {
-        scope = "";
-        rest = trimmed;
-      }
-    } else {
-      rest = trimmed;
+      // Scope is valid format but not allowed
+      return scopeSuggestionText(type, normalizedScope, rest, allowedScopes);
     }
   }
 
-  if (scope && scope.length < 20 && scope !== type) {
+  // Remove duplicate type at the start of rest
+  if (rest.toLowerCase().startsWith(type.toLowerCase() + " ")) {
+    rest = rest.substring(type.length).trim();
+  }
+
+  if (scope) {
     return `${type}(${scope}): ${rest}`;
   } else {
     return `${type}: ${rest}`;
