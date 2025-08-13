@@ -48,9 +48,6 @@ function isValidScope(scope: string, allowedScopes: string[] = []) {
   ) || allowedScopes.includes(normalized);
 }
 
-/**
- * If the scope is invalid, show a list of allowed scopes and an example.
- */
 function scopeSuggestionText(type: string, invalidScope: string, subject: string, allowedScopes: string[]): string {
   return [
     `The scope '${invalidScope}' is not allowed.`,
@@ -60,6 +57,7 @@ function scopeSuggestionText(type: string, invalidScope: string, subject: string
     `Example: ${type}(<allowed-scope>): ${subject}`
   ].join('\n');
 }
+
 
 export function suggestConventionalMessage(message: string, allowedTypesInput: string[] = allowedTypes, allowedScopes: string[] = []): string {
   const trimmed = message.trim();
@@ -75,6 +73,8 @@ export function suggestConventionalMessage(message: string, allowedTypesInput: s
     const [ , type, scope ] = typeScopeNoSubject;
     if (allowedTypesInput.includes(type) && allowedScopes.includes(scope)) {
       return `${type}(${scope}): `;
+    } else if (scope && !allowedScopes.includes(scope)) {
+      return scopeSuggestionText(type, scope, '', allowedScopes);
     } else {
       return `fix: `;
     }
@@ -88,9 +88,22 @@ export function suggestConventionalMessage(message: string, allowedTypesInput: s
       return `fix: ${subject}`;
     }
     if (!allowedScopes.includes(scope)) {
-      return `${type}: ${subject}`;
+      return scopeSuggestionText(type, scope, subject, allowedScopes);
     }
     return trimmed;
+  }
+
+  // If message starts with a valid type and colon, do not prepend fix:
+  const typeColon = /^([a-zA-Z0-9]+):\s*/.exec(trimmed);
+  if (typeColon && allowedTypesInput.includes(typeColon[1])) {
+    return trimmed;
+  }
+
+  // If message starts with a valid type! or type!(scope):, treat as breaking change and strip type for suggestion
+  const breakingType = /^([a-zA-Z0-9]+)!\(([^)]+)\):\s*(.*)/.exec(trimmed);
+  if (breakingType) {
+    // breakingType[3] is the subject
+    return `fix: ${breakingType[3]}`;
   }
 
   // If single word, return 'fix: <word>'
@@ -112,11 +125,17 @@ export function suggestConventionalMessage(message: string, allowedTypesInput: s
 
   // Look for a valid scope in allowedScopes (not type)
   const candidateScope = words.find(
-    (word, idx) => idx !== 0 && allowedScopes.includes(word.replace(/[^a-zA-Z0-9-_]/g, "").toLowerCase())
+    (word, idx) => idx !== 0 && isValidScope(word, allowedScopes)
   );
   if (candidateScope) {
-    scope = candidateScope.replace(/[^a-zA-Z0-9-_]/g, "").toLowerCase();
-    rest = words.filter(w => w !== candidateScope).join(" ");
+    const normalizedScope = candidateScope.replace(/[^a-zA-Z0-9-_]/g, "").toLowerCase();
+    if (allowedScopes.includes(normalizedScope)) {
+      scope = normalizedScope;
+      rest = words.filter(w => w !== candidateScope).join(" ");
+    } else {
+      // Scope is valid format but not allowed
+      return scopeSuggestionText(type, normalizedScope, rest, allowedScopes);
+    }
   }
 
   // Remove duplicate type at the start of rest

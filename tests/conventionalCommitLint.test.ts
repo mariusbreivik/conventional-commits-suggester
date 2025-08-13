@@ -25,19 +25,19 @@ describe("lintCommits", () => {
         expect(errors[0]).toMatchObject({
             sha: "c3",
             message: "updated dependencies",
-            suggestion: "fix: updated dependencies",
+            suggestion: expect.stringContaining("The scope 'dependencies' is not allowed."),
             reason: "Missing commit type.",
         });
         expect(errors[1]).toMatchObject({
             sha: "d4",
             message: "fix login bug",
-            suggestion: "fix: login bug",
+            suggestion: expect.stringContaining("The scope 'login' is not allowed."),
             reason: "Missing commit type.",
         });
         expect(errors[2]).toMatchObject({
             sha: "e5",
             message: "bad commit message",
-            suggestion: "fix: bad commit message",
+            suggestion: expect.stringContaining("The scope 'commit' is not allowed."),
             reason: "Missing commit type.",
         });
     });
@@ -93,7 +93,7 @@ describe("lintCommits", () => {
         ];
         const errors = lintCommits(commits, allowedTypes);
         expect(errors).toHaveLength(1);
-        expect(errors[0].suggestion).toBe("fix: login bug");
+        expect(errors[0].suggestion).toEqual(expect.stringContaining("The scope 'login' is not allowed."));
         expect(errors[0].reason).toMatch(/Missing commit type/);
     });
 
@@ -103,7 +103,7 @@ describe("lintCommits", () => {
         ];
         const errors = lintCommits(commits, allowedTypes);
         expect(errors).toHaveLength(1);
-        expect(errors[0].suggestion).toBe("fix: fix:");
+        expect(errors[0].suggestion).toBe("fix:");
         expect(errors[0].reason).toMatch(/Missing subject/);
     });
 
