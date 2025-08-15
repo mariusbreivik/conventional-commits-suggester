@@ -1,5 +1,5 @@
-import { suggestConventionalMessage, allowedScopes as defaultAllowedScopes } from "./suggestConventionalMessage";
-import { sync as parseConventional } from "conventional-commits-parser";
+import { suggestConventionalMessage, allowedScopes as defaultAllowedScopes } from "./suggestConventionalMessage.js";
+import { CommitParser  } from "conventional-commits-parser";
 
 export interface Commit {
   sha: string;
@@ -32,7 +32,8 @@ export function lintCommits(
       continue;
     }
 
-    const parsed = parseConventional(commit.message);
+    const parser = new CommitParser();
+    const parsed = parser.parse(commit.message);
 
     let commitType = parsed.type;
     let breakingTypeBang = false;

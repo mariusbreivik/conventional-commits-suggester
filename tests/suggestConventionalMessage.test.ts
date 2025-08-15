@@ -1,4 +1,4 @@
-import { suggestConventionalMessage, allowedTypes, allowedScopes } from "../src/suggestConventionalMessage";
+import { suggestConventionalMessage, allowedTypes, allowedScopes } from "../src/suggestConventionalMessage.js";
 
 function expectedScopeSuggestion(type: string, invalidScope: string, subject: string) {
   return [

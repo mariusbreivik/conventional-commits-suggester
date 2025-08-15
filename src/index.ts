@@ -1,7 +1,7 @@
 import * as core from "@actions/core";
 import * as github from "@actions/github";
-import { lintCommits, Commit } from "./conventionalCommitLint";
-import { allowedScopes as defaultAllowedScopes } from "./suggestConventionalMessage";
+import { lintCommits, Commit } from "./conventionalCommitLint.js";
+import { allowedScopes as defaultAllowedScopes } from "./suggestConventionalMessage.js";
 
 async function run() {
   try {
